@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("")
-public class TestController {
+public class AuthController {
 
     @GetMapping("/loginSuccess")
     public String loginSuccess(OAuth2AuthenticationToken authentication) {
