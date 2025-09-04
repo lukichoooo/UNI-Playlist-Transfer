@@ -1,0 +1,133 @@
+/* Navbar.module.css - scoped styles for Navbar component */
+
+.nav {
+    width: 100%;
+    background: #0d1b2a;
+    /* deep bold blue */
+    border-bottom: 2px solid #c17f15;
+    /* bright accent line */
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+
+.inner {
+    max-width: var(--container-max, 1100px);
+    margin: 0 auto;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: space-between;
+}
+
+/* Brand */
+.brand {
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--text, #0f1724);
+    font-size: 1rem;
+    letter-spacing: -0.01em;
+}
+
+/* Toggle (hamburger) */
+.toggle {
+    background: transparent;
+    border: 0;
+    padding: 0.35rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.burger {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: currentColor;
+    position: relative;
+}
+
+.burger::before,
+.burger::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 20px;
+    height: 2px;
+    background: currentColor;
+    transition: transform 180ms ease;
+}
+
+.burger::before {
+    top: -6px;
+}
+
+.burger::after {
+    top: 6px;
+}
+
+/* Links container - mobile first hidden until toggled */
+.links {
+    position: absolute;
+    right: 1rem;
+    top: 100%;
+    background: var(--surface, white);
+    border-radius: 8px;
+    padding: 0.75rem;
+    box-shadow: var(--shadow-sm, 0 4px 12px rgba(0, 0, 0, 0.08));
+    display: none;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 160px;
+}
+
+/* Open state */
+.open {
+    display: flex;
+}
+
+/* Individual link */
+.link {
+    text-decoration: none;
+    color: var(--text, #0f1724);
+    padding: 0.45rem 0.6rem;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.link:hover {
+    background: var(--glass, rgba(0, 0, 0, 0.04));
+}
+
+/* Active navlink */
+.active {
+    background: var(--accent, #2563eb);
+    color: var(--accent-foreground, #fff);
+}
+
+/* Desktop layout - show inline links and hide toggle */
+@media (min-width: 720px) {
+    .toggle {
+        display: none;
+    }
+
+    .links {
+        position: static;
+        display: flex !important;
+        flex-direction: row;
+        gap: 0.75rem;
+        background: transparent;
+        padding: 0;
+        box-shadow: none;
+        min-width: auto;
+        align-items: center;
+    }
+
+    .links .link {
+        padding: 0.45rem 0.6rem;
+    }
+}

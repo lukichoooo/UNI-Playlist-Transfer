@@ -22,7 +22,7 @@ public class UserService {
         return mapper.toUserPrivateDto(repo.save(mapper.toUser(userPrivateDto)));
     }
 
-    public UserPrivateDto findById(Long id) {
+    public UserPrivateDto findById(Long id) { // must be OWNER
         return mapper.toUserPrivateDto(repo.findById(id).orElse(null));
     }
 

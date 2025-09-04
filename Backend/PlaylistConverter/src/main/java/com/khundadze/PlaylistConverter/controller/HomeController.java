@@ -5,10 +5,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("")
+@RequestMapping("/api/home")
 public class HomeController {
 
-    @GetMapping("/home")
+    @GetMapping("")
     public String home() {
         return "Welcome to Playlist Converter";
     }
