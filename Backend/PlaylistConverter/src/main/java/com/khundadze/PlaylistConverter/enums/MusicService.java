@@ -1,4 +1,4 @@
-package com.khundadze.enums;
+package com.khundadze.PlaylistConverter.enums;
 
 public enum MusicService {
     SPOTIFY,

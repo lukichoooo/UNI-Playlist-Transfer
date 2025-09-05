@@ -3,10 +3,10 @@ package com.khundadze.PlaylistConverter.services;
 import org.springframework.stereotype.Component;
 
 import com.khundadze.PlaylistConverter.dtos.OAuthTokenResponseDto;
+import com.khundadze.PlaylistConverter.enums.MusicService;
 import com.khundadze.PlaylistConverter.models_db.OAuthToken;
 import com.khundadze.PlaylistConverter.models_db.OAuthTokenId;
 import com.khundadze.PlaylistConverter.models_db.User;
-import com.khundadze.enums.MusicService;
 
 @Component
 public class OAuthTokenMapper {

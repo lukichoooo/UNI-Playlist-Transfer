@@ -3,7 +3,7 @@ package com.khundadze.PlaylistConverter.models_db;
 import java.time.Instant;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.khundadze.enums.MusicService;
+import com.khundadze.PlaylistConverter.enums.MusicService;
 
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;

@@ -2,18 +2,21 @@ package com.khundadze.PlaylistConverter.services;
 
 import java.util.List;
 
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.khundadze.PlaylistConverter.dtos.UserPrivateDto;
 import com.khundadze.PlaylistConverter.dtos.UserPublicDto;
+import com.khundadze.PlaylistConverter.exceptions.UserNotFoundException;
 import com.khundadze.PlaylistConverter.repo.UserRepository;
-import com.khundadze.exceotions.UserNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserService implements UserDetailsService {
 
     private final UserMapper mapper;
     private final UserRepository repo;
@@ -39,5 +42,11 @@ public class UserService {
                 .stream()
                 .map(mapper::toUserPublicDto)
                 .toList();
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return repo.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User " + username + " not found"));
     }
 }

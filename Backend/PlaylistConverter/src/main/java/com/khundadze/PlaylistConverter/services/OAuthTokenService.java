@@ -4,15 +4,15 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.khundadze.PlaylistConverter.enums.MusicService;
 import com.khundadze.PlaylistConverter.models_db.OAuthToken;
 import com.khundadze.PlaylistConverter.repo.OAuthTokenRepository;
-import com.khundadze.enums.MusicService;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class OAuthTokenManagementService { // more descriptive name
+public class OAuthTokenService { // more descriptive name
 
     private final OAuthTokenRepository tokenRepository;
     private final OAuthTokenMapper oauthTokenIdMapper;
@@ -30,6 +30,6 @@ public class OAuthTokenManagementService { // more descriptive name
     // }
 
     public List<OAuthToken> getAllOAuthTokensForUser(Long userId) {
-        return tokenRepository.findAllByUserId(userId);
+        return tokenRepository.findAllByUser_Id(userId);
     }
 }

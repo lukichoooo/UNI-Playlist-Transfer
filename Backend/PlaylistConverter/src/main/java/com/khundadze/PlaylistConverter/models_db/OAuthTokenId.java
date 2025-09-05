@@ -2,7 +2,7 @@ package com.khundadze.PlaylistConverter.models_db;
 
 import java.io.Serializable;
 
-import com.khundadze.enums.MusicService;
+import com.khundadze.PlaylistConverter.enums.MusicService;
 
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;

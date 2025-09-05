@@ -1,4 +1,4 @@
-package com.khundadze.PlaylistConverter.oauthTest;
+package com.khundadze.PlaylistConverter.oauthTokenTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -8,11 +8,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.khundadze.PlaylistConverter.dtos.OAuthTokenResponseDto;
+import com.khundadze.PlaylistConverter.enums.MusicService;
 import com.khundadze.PlaylistConverter.models_db.OAuthToken;
 import com.khundadze.PlaylistConverter.models_db.OAuthTokenId;
 import com.khundadze.PlaylistConverter.models_db.User;
 import com.khundadze.PlaylistConverter.services.OAuthTokenMapper;
-import com.khundadze.enums.MusicService;
 
 class OAuthTokenMapperTest {
 
