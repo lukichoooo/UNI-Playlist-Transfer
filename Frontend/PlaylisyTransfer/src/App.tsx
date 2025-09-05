@@ -6,15 +6,16 @@ import Settings from './pages/private/Settings'
 import Profile from './pages/private/Profile'
 import NavBarWrapper from './layouts/NavBarWrapper'
 import PrivatePageWrapper from './layouts/PrivatePageWrapper'
-import LoginPage from './pages/login/LoginPage'
+import LoginPage from './pages/Auth/LoginPage'
+import RegisterPage from './pages/Auth/RegisterPage'
 
 export default function App()
 {
   return (
     <Routes>
-      {/* Login
-       */}
+      {/* Login */}
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
 
       {/* public */}
       <Route element={<NavBarWrapper />}>
