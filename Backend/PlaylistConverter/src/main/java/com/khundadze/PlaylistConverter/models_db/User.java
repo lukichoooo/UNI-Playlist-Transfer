@@ -6,10 +6,13 @@ import java.util.List;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,6 +36,10 @@ public class User implements UserDetails {
     private String username;
     private String email;
     private String password;
+
+    @OneToMany(mappedBy = "user")
+    @JsonManagedReference
+    private List<OAuthToken> accessTokens;
 
     // implement UserDetails methods
     @Override
