@@ -1,5 +1,7 @@
 package com.khundadze.PlaylistConverter.authenticationMVC;
 
-public class RegisterRequest {
+public record RegisterRequest(
+        String username,
+        String password) {
 
 }

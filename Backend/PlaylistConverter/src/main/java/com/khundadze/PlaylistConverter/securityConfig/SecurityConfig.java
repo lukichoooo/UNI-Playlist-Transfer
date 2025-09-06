@@ -2,6 +2,7 @@ package com.khundadze.PlaylistConverter.securityConfig;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -11,26 +12,40 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import com.khundadze.PlaylistConverter.authenticationMVC.AuthService;
+
+import lombok.RequiredArgsConstructor;
 
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                        AuthenticationFilter authenticationFilter) throws Exception {
+                        AuthenticationFilter authenticationFilter, OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler)
+                        throws Exception {
                 http
+                                .cors().and()
+                                // Add JWT filter
                                 .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                                .csrf(csrf -> csrf.disable())
-                                .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers("/home", "/error", "api/auth/**").permitAll()
-                                                .anyRequest().authenticated())
+                                // Disable CSRF for APIs
+                                .csrf().disable()
+                                // Stateless sessions
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                                .formLogin(form -> form
-                                                .defaultSuccessUrl("/loginSuccess", true)
-                                                .permitAll())
+                                // Authorization rules
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                                .requestMatchers("/home", "/error", "/api/auth/**").permitAll()
+                                                .anyRequest().authenticated())
+                                // OAuth2 login (used for Google/GitHub)
                                 .oauth2Login(oauth2 -> oauth2
-                                                .defaultSuccessUrl("/loginSuccess", true))
+                                                .successHandler(oAuth2LoginSuccessHandler)) // clean and short
+
+                                // Logout
                                 .logout(logout -> logout
                                                 .logoutUrl("/logout")
                                                 .logoutSuccessUrl("/home")
@@ -40,7 +55,21 @@ public class SecurityConfig {
         }
 
         @Bean
-        public AuthenticationFilter authenticationFilter(UserDetailsService userDetailsService, JwtService jwtService) {
+        public WebMvcConfigurer corsConfigurer() {
+                return new WebMvcConfigurer() {
+                        @Override
+                        public void addCorsMappings(CorsRegistry registry) {
+                                registry.addMapping("/**")
+                                                .allowedOrigins("http://localhost:5173") // your frontend
+                                                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                                                .allowCredentials(true);
+                        }
+                };
+        }
+
+        @Bean
+        public AuthenticationFilter authenticationFilter(UserDetailsService userDetailsService,
+                        JwtService jwtService) {
                 return new AuthenticationFilter(userDetailsService, jwtService);
         }
 
@@ -54,5 +83,4 @@ public class SecurityConfig {
                         throws Exception {
                 return authenticationConfiguration.getAuthenticationManager();
         }
-
 }

@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import styles from "./Navbar.module.css";
-import { jwtService } from "../../services/jwtService";
+import { authService } from "../../services/authService";
 
 export default function Navbar()
 {
     const [open, setOpen] = useState(false);
     const navigate = useNavigate();
-    const loggedIn = jwtService.isLoggedIn();
+    const loggedIn = authService.isLoggedIn();
 
     const handleLogout = () =>
     {
-        jwtService.removeToken();
+        authService.removeToken();
         navigate("/login");
     };
 

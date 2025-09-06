@@ -23,6 +23,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "oauth_token")
 public class OAuthToken {
 
     @EmbeddedId

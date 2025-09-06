@@ -8,6 +8,7 @@ import NavBarWrapper from './layouts/NavBarWrapper'
 import PrivatePageWrapper from './layouts/PrivatePageWrapper'
 import LoginPage from './pages/Auth/LoginPage'
 import RegisterPage from './pages/Auth/RegisterPage'
+import OAuthSuccessPage from './pages/Auth/OAuthSuccessPage'
 
 export default function App()
 {
@@ -16,6 +17,7 @@ export default function App()
       {/* Login */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/oauth-success" element={<OAuthSuccessPage />} />
 
       {/* public */}
       <Route element={<NavBarWrapper />}>

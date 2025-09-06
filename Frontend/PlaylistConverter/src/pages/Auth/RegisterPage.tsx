@@ -1,19 +1,18 @@
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import styles from "./AuthPage.module.css";
+import { authService } from "../../services/authService";
 
 export default function RegisterPage()
 {
-    const [email, setEmail] = useState("");
+    const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [repeatPassword, setRepeatPassword] = useState("");
     const [error, setError] = useState("");
 
-    const [repeatPassword, setRepeatPassword] = useState("");
-
     const navigate = useNavigate();
-    const location = useLocation();
 
-    const handleFormRegister = (e: React.FormEvent) =>
+    const handleFormRegister = async (e: React.FormEvent) =>
     {
         e.preventDefault();
         setError("");
@@ -24,23 +23,24 @@ export default function RegisterPage()
             return;
         }
 
-        // TODO: call backend with email/password to get JWT
-    };
-
-
-    const handleGoogleRegister = () =>
-    {
-        // TODO: redirect to Google OAuth2 Register
-    };
-
-    const handleGithubRegister = () =>
-    {
-        // TODO: redirect to GitHub OAuth2 Register
+        try
+        {
+            await authService.register(username, password); // ✅ sends username
+            navigate("/dashboard");
+        } catch (err: any)
+        {
+            setError(err.response?.data?.message || "Registration failed");
+        }
     };
 
     return (
         <>
-            <button className={styles.homeButton + " " + styles.button} onClick={() => navigate("/")}>Home</button>
+            <button
+                className={styles.homeButton + " " + styles.button}
+                onClick={() => navigate("/")}
+            >
+                Home
+            </button>
 
             <div className={styles.container}>
                 <h1>Register</h1>
@@ -49,11 +49,11 @@ export default function RegisterPage()
                 <p>Create a new account</p>
 
                 <form onSubmit={handleFormRegister} className={styles.form}>
-                    <label>Email</label>
+                    <label>Username</label>
                     <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        type="text"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
                         required
                     />
 
@@ -73,7 +73,6 @@ export default function RegisterPage()
                         required
                     />
 
-
                     <button type="submit" className={styles.button}>
                         Register
                     </button>
@@ -86,10 +85,9 @@ export default function RegisterPage()
                     </span>
                 </p>
 
-
                 <div className={styles.oauth}>
-                    <button onClick={handleGoogleRegister}>Register with Google</button>
-                    <button onClick={handleGithubRegister}>Register with GitHub</button>
+                    <button onClick={authService.googleLogin}>Register with Google</button>
+                    <button onClick={authService.githubLogin}>Register with GitHub</button>
                 </div>
             </div>
         </>

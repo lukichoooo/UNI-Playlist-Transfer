@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import styles from "./AuthPage.module.css";
+import { authService } from "../../services/authService";
+
 
 export default function LoginPage()
 {
-    const [email, setEmail] = useState("");
+    const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
 
@@ -12,38 +14,40 @@ export default function LoginPage()
     const location = useLocation();
     const from = (location.state as any)?.from?.pathname || "/dashboard";
 
-    const handleFormLogin = (e: React.FormEvent) =>
+    const handleFormLogin = async (e: React.FormEvent) =>
     {
         e.preventDefault();
         setError("");
-        // TODO: call backend with email/password to get JWT
-    };
-
-    const handleGoogleLogin = () =>
-    {
-        // TODO: redirect to Google OAuth2 login
-    };
-
-    const handleGithubLogin = () =>
-    {
-        // TODO: redirect to GitHub OAuth2 login
+        try
+        {
+            await authService.login(username, password); // ✅ now sends username
+            navigate(from, { replace: true });
+        } catch (err: any)
+        {
+            setError(err.response?.data?.message || "Login failed");
+        }
     };
 
     return (
         <>
-            <button className={styles.homeButton + " " + styles.button} onClick={() => navigate("/")}>Home</button>
+            <button
+                className={styles.homeButton + " " + styles.button}
+                onClick={() => navigate("/")}
+            >
+                Home
+            </button>
             <div className={styles.container}>
                 <h1>Login</h1>
                 {error && <p className={styles.error}>{error}</p>}
 
-                <p>Enter your existing email and password</p>
+                <p>Enter your username and password</p>
 
                 <form onSubmit={handleFormLogin} className={styles.form}>
-                    <label>Email</label>
+                    <label>Username</label>
                     <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        type="text"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
                         required
                     />
 
@@ -67,11 +71,9 @@ export default function LoginPage()
                     </span>
                 </p>
 
-
-
                 <div className={styles.oauth}>
-                    <button onClick={handleGoogleLogin}>Login with Google</button>
-                    <button onClick={handleGithubLogin}>Login with GitHub</button>
+                    <button onClick={authService.googleLogin}>Login with Google</button>
+                    <button onClick={authService.githubLogin}>Login with GitHub</button>
                 </div>
             </div>
         </>

@@ -26,6 +26,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "users", schema = "public")
 public class User implements UserDetails {
 
     @Id
