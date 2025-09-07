@@ -1,21 +1,13 @@
-import { Link } from "react-router-dom";
-import styles from "./HomePage.module.css"
 import ServiceSelectorMenu from "../../components/serviceSelectorMenu/ServiceSelectorMenu";
+import styles from "./HomePage.module.css";
 
 export default function HomePage()
 {
     return (
-        <div>
+        <div className={styles["page-container"]}>
             <h1>Home Page</h1>
-            <br />
-            <h2>// TODO: fetch some data from backend to check connection</h2>
-            <Link to={"/about"}>
-                <button className={styles.aboutButton}>About</button>
-            </Link>
             <hr />
-
             <ServiceSelectorMenu authenticatedServices={[]} />
-
         </div>
     );
 }

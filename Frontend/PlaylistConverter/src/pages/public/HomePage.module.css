@@ -1,5 +1,25 @@
-.aboutButton {
-    background-color: #c17f15;
-    margin-left: 2rem;
-    font-size: 1.2rem;
+/* HomePage.module.css */
+.page-container {
+    width: 100%;
+    /* take 90% of viewport width */
+    max-width: 1200px;
+    /* but never grow beyond 1200px */
+    min-width: 320px;
+    /* optional: prevent it from being too small */
+    margin: 0 auto;
+    /* center horizontally */
+    padding: 0 1rem;
+    /* some padding on smaller screens */
+    box-sizing: border-box;
+}
+
+/* Optional: adjust h1/h2 font sizes on smaller screens */
+@media (max-width: 600px) {
+    .page-container h1 {
+        font-size: 1.5rem;
+    }
+
+    .page-container h2 {
+        font-size: 1.2rem;
+    }
 }
