@@ -55,12 +55,16 @@ input:focus {
 }
 
 .homeButton {
+    position: relative;
     left: 5rem;
     top: 2rem;
-    position: relative;
-    scale: 2;
-    border-radius: 0.2rem;
+    border-radius: 0.3rem;
+    padding: 0.7rem 1.5rem;
+    font-size: 1.1rem;
+    width: 12rem;
+    display: inline-block;
 }
+
 
 .linkText {
     color: var(--accent, #2563eb);

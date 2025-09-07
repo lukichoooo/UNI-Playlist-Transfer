@@ -9,38 +9,42 @@ import PrivatePageWrapper from './layouts/PrivatePageWrapper'
 import LoginPage from './pages/Auth/LoginPage'
 import RegisterPage from './pages/Auth/RegisterPage'
 import OAuthSuccessPage from './pages/Auth/OAuthSuccessPage'
+import Footer from './components/Footer/Footer'
 
 export default function App()
 {
   return (
-    <Routes>
-      {/* Login */}
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/oauth-success" element={<OAuthSuccessPage />} />
+    <div className="app-container">
+      <Routes>
+        {/* Login */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/oauth-success" element={<OAuthSuccessPage />} />
 
-      {/* public */}
-      <Route element={<NavBarWrapper />}>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/about" element={<AboutPage />} />
+        {/* public */}
+        <Route element={<NavBarWrapper />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/about" element={<AboutPage />} />
 
-        {/* private */}
-        <Route element={<PrivatePageWrapper />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/profile" element={<Profile />} />
+          {/* private */}
+          <Route element={<PrivatePageWrapper />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/profile" element={<Profile />} />
+          </Route>
+
+          {/* Page not found 404 fallback */}
+          <Route
+            path="*"
+            element={
+              <div className="container">
+                <h2>Not found</h2>
+              </div>
+            }
+          />
         </Route>
-
-        {/* Page not found 404 fallback */}
-        <Route
-          path="*"
-          element={
-            <div className="container">
-              <h2>Not found</h2>
-            </div>
-          }
-        />
-      </Route>
-    </Routes>
+      </Routes>
+      <Footer />
+    </div>
   )
 }

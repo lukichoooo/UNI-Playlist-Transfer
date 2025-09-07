@@ -1,18 +1,11 @@
 :root {
   --bg: #0f1724;
-  /* deep neutral background for modern "dark" base */
   --bg-soft: #0b1220;
-  /* slightly softer for surfaces */
   --surface: #0f1728;
-  /* card surface */
   --muted-surface: #0b1228;
-  /* shallow surface for nav */
   --text: #e6eef8;
-  /* primary text (light on dark) */
   --muted-text: #9aa6bb;
-  /* secondary text */
   --accent: #6aa8ff;
-  /* cool blue accent */
   --accent-600: #2b78ff;
   --success: #3ad29f;
   --danger: #ff6b6b;
@@ -24,7 +17,7 @@
   --container-max: 2200px;
 }
 
-/* ---- global typographic base ---- */
+/* ---- Global base ---- */
 * {
   box-sizing: border-box;
 }
@@ -34,20 +27,27 @@ html {
   -webkit-font-smoothing: antialiased;
 }
 
-body {
+body,
+#root {
   margin: 0;
   font-family: Inter, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background: linear-gradient(180deg, var(--bg), #06101a 120%);
   color: var(--text);
   min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  display: flex;
+  flex-direction: column;
   line-height: 1.45;
-  -webkit-text-size-adjust: 100%;
 }
 
-/* subtle page container */
+/* ---- App layout ---- */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
 .page {
+  flex: 1;
   padding: 1.5rem 1rem;
   background: transparent;
 }
@@ -58,14 +58,13 @@ body {
   }
 }
 
-/* centered container */
 .container {
   max-width: var(--container-max);
   margin: 0 auto;
   padding: 0 1rem;
 }
 
-/* ---- modern navbar (desktop + mobile) ---- */
+/* ---- Navbar ---- */
 .nav {
   position: sticky;
   top: 0;
@@ -85,12 +84,10 @@ body {
   gap: 1rem;
 }
 
-/* left group: brand + public links (keeps home/about close) */
 .navLeft {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  /* small gap so brand + Home + About sit close */
 }
 
 .brand {
@@ -114,14 +111,12 @@ body {
   background: rgba(255, 255, 255, 0.02);
 }
 
-/* nav right group (links / actions) */
 .navRight {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-/* mobile toggle (keeps small) */
 .toggle {
   background: transparent;
   border: none;
@@ -137,7 +132,7 @@ body {
   box-shadow: 0 0 0 4px rgba(106, 168, 255, 0.12);
 }
 
-/* nav menu (desktop inline, mobile popup) */
+/* Nav menu */
 .links {
   display: none;
   position: absolute;
@@ -157,8 +152,7 @@ body {
   display: flex;
 }
 
-/* desktop override */
-@media (min-width: 720px) {
+@media (min-width:720px) {
   .toggle {
     display: none;
   }
@@ -177,7 +171,6 @@ body {
   }
 }
 
-/* link styles */
 .link {
   color: var(--muted-text);
   text-decoration: none;
@@ -197,7 +190,7 @@ body {
   box-shadow: 0 6px 20px rgba(43, 120, 255, 0.06);
 }
 
-/* ---- modern buttons ---- */
+/* ---- Buttons ---- */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -209,11 +202,9 @@ body {
   border: 1px solid transparent;
   cursor: pointer;
   min-height: 44px;
-  -webkit-tap-highlight-color: transparent;
   transition: transform 140ms ease, box-shadow 140ms ease;
 }
 
-/* primary: pill with subtle gradient */
 .btn-primary {
   background: linear-gradient(180deg, var(--accent), var(--accent-600));
   color: #021022;
@@ -224,7 +215,6 @@ body {
   transform: translateY(-2px);
 }
 
-/* subtle outline (for secondary actions) */
 .btn-outline {
   background: transparent;
   color: var(--text);
@@ -237,7 +227,7 @@ body {
   border: none;
 }
 
-/* ---- cards / surfaces ---- */
+/* ---- Cards / forms ---- */
 .card {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
   border: 1px solid var(--glass-border);
@@ -247,7 +237,6 @@ body {
   color: var(--text);
 }
 
-/* form controls - modern look */
 label {
   display: block;
   font-weight: 600;
@@ -270,7 +259,7 @@ label {
   border-color: var(--accent);
 }
 
-/* responsive utilities */
+/* ---- Responsive utils ---- */
 .row {
   display: flex;
   gap: 0.75rem;
@@ -290,7 +279,7 @@ label {
   }
 }
 
-/* accessibility and reduced-motion */
+/* ---- Accessibility / Motion ---- */
 :focus {
   outline: none;
   box-shadow: 0 0 0 4px rgba(106, 168, 255, 0.08);

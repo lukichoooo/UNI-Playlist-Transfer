@@ -1,0 +1,65 @@
+.about-container {
+    max-width: 1000px;
+    margin: 3rem auto;
+    padding: 1rem 2rem;
+}
+
+.about-title {
+    font-size: 2.25rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    text-align: center;
+    color: var(--accent);
+}
+
+/* Card container */
+.about-cards {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 720px) {
+    .about-cards {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Individual cards */
+.about-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.about-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 26px rgba(43, 120, 255, 0.2);
+}
+
+/* Subtitle */
+.about-subtitle {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--accent-600);
+}
+
+/* Paragraph text */
+.about-text {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text);
+}
+
+.about-text a {
+    color: var(--accent);
+    text-decoration: underline;
+}
+
+.about-text a:hover {
+    color: var(--accent-600);
+}

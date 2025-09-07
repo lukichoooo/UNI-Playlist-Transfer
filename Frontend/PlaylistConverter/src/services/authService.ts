@@ -66,8 +66,6 @@ class AuthService
     };
 
 
-
-
     // NEW: parse URL search params and save token
     handleOAuthSuccess = (search: string): boolean =>
     {
