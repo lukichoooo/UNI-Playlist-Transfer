@@ -1,7 +1,10 @@
-// src/main/java/com/khundadze/PlaylistConverter/streamingServices/SoundCloudService.java
-package com.khundadze.PlaylistConverter.streamingServices;
+package com.khundadze.PlaylistConverter.streamingServices.clientSpecificService;
 
 import org.springframework.stereotype.Service;
+
+import com.khundadze.PlaylistConverter.streamingServices.IMusicService;
+
+import java.util.List;
 
 @Service
 public class SoundCloudService implements IMusicService {
@@ -19,7 +22,7 @@ public class SoundCloudService implements IMusicService {
     }
 
     @Override
-    public String createPlaylist(Long userId, String accessToken) {
+    public String createPlaylist(Long userId, String accessToken, String playlistName, List<String> trackIds) {
         // TODO: implement SoundCloud API call
         return null;
     }

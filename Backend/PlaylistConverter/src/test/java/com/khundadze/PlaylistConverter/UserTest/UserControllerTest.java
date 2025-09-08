@@ -7,7 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.khundadze.PlaylistConverter.controller.UserController;
+import com.khundadze.PlaylistConverter.controllers.UserController;
 import com.khundadze.PlaylistConverter.dtos.UserPrivateDto;
 import com.khundadze.PlaylistConverter.dtos.UserPublicDto;
 import com.khundadze.PlaylistConverter.services.UserService;

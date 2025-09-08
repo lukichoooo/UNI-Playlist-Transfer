@@ -3,8 +3,7 @@ import axios from "axios";
 
 type MusicService = "SPOTIFY" | "YOUTUBE" | "SOUNDCLOUD" | "DEEZER" | "APPLE_MUSIC";
 
-type OAuthTokenResponse
-{
+export type OAuthTokenResponse = {
     accessToken: string;
     service: MusicService;
 }
@@ -12,27 +11,23 @@ type OAuthTokenResponse
 const BASE_URL = "http://localhost:8080/api/playlist";
 
 
-export interface AuthPayload
-{
+export type AuthPayload = {
     service: MusicService;
 }
 
-export interface CreatePlaylistPayload
-{
+export type CreatePlaylistPayload = {
     service: MusicService;
     playlistName: string;
     tracks: string[]; // array of track IDs or URIs
     accessToken: string;
 }
 
-export interface GetPlaylistsPayload
-{
+export type GetPlaylistsPayload = {
     service: MusicService;
     accessToken: string;
 }
 
-export interface PlaylistTransferPayload
-{
+export type PlaylistTransferPayload = {
     fromService: MusicService;
     toService: MusicService;
     playlistName: string;

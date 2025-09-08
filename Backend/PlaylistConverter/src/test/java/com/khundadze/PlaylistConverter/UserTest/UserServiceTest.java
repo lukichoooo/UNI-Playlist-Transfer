@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import com.khundadze.PlaylistConverter.dtos.UserPrivateDto;
 import com.khundadze.PlaylistConverter.dtos.UserPublicDto;
+import com.khundadze.PlaylistConverter.exceptions.UserNotFoundException;
 import com.khundadze.PlaylistConverter.models_db.User;
 import com.khundadze.PlaylistConverter.repo.UserRepository;
 import com.khundadze.PlaylistConverter.services.UserMapper;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -42,7 +44,7 @@ class UserServiceTest {
         when(repo.save(user)).thenReturn(user);
         when(mapper.toUserPrivateDto(user)).thenReturn(savedDto);
 
-        final UserPrivateDto result = service.save(dto);
+        UserPrivateDto result = service.save(dto);
 
         assertEquals(savedDto, result);
         verify(repo).save(user);
@@ -58,7 +60,7 @@ class UserServiceTest {
         when(repo.findById(id)).thenReturn(Optional.of(user));
         when(mapper.toUserPrivateDto(user)).thenReturn(dto);
 
-        final UserPrivateDto result = service.findById(id);
+        UserPrivateDto result = service.findById(id);
 
         assertEquals(dto, result);
         verify(repo).findById(id);
@@ -70,7 +72,7 @@ class UserServiceTest {
         final Long id = 99L;
         when(repo.findById(id)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> service.findById(id));
+        assertThrows(UserNotFoundException.class, () -> service.findById(id));
         verify(repo).findById(id);
         verifyNoInteractions(mapper);
     }
@@ -84,7 +86,7 @@ class UserServiceTest {
         when(repo.findByUsername(username)).thenReturn(Optional.of(user));
         when(mapper.toUserPublicDto(user)).thenReturn(dto);
 
-        final UserPublicDto result = service.findByUsername(username);
+        UserPublicDto result = service.findByUsername(username);
 
         assertEquals(dto, result);
         verify(repo).findByUsername(username);
@@ -96,7 +98,7 @@ class UserServiceTest {
         final String username = "unknown";
         when(repo.findByUsername(username)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> service.findByUsername(username));
+        assertThrows(UserNotFoundException.class, () -> service.findByUsername(username));
         verify(repo).findByUsername(username);
         verifyNoInteractions(mapper);
     }
@@ -115,11 +117,33 @@ class UserServiceTest {
         when(mapper.toUserPublicDto(user1)).thenReturn(dto1);
         when(mapper.toUserPublicDto(user2)).thenReturn(dto2);
 
-        final List<UserPublicDto> result = service.findByUsernameLike(partial);
+        List<UserPublicDto> result = service.findByUsernameLike(partial);
 
         assertEquals(List.of(dto1, dto2), result);
         verify(repo).findByUsernameLike(partial);
         verify(mapper).toUserPublicDto(user1);
         verify(mapper).toUserPublicDto(user2);
+    }
+
+    @Test
+    void testLoadUserByUsername() {
+        final String username = "testUser";
+        final User user = User.builder().id(1L).username(username).password("pass").build();
+
+        when(repo.findByUsername(username)).thenReturn(Optional.of(user));
+
+        UserDetails userDetails = service.loadUserByUsername(username);
+
+        assertEquals(user, userDetails);
+        verify(repo).findByUsername(username);
+    }
+
+    @Test
+    void testLoadUserByUsernameNotFound() {
+        final String username = "unknown";
+        when(repo.findByUsername(username)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> service.loadUserByUsername(username));
+        verify(repo).findByUsername(username);
     }
 }

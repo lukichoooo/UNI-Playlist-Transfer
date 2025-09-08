@@ -1,4 +1,4 @@
-package com.khundadze.PlaylistConverter.controller;
+package com.khundadze.PlaylistConverter.controllers;
 
 import java.util.List;
 
