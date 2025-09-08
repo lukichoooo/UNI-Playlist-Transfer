@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import ServiceSelectionStep from "./ServiceSelectionStep";
-import PlaylistDetailsStep from "./PlaylistDetailsStep"; // optional next step
+import PlaylistDetailsStep from "./PlaylistDetailsStep";
 import "./ServiceSelectorMenu.css";
 
 type ServiceSelectorMenuProps = {
@@ -13,7 +13,7 @@ export default function ServiceSelectorMenu({ authenticatedServices }: ServiceSe
 {
     const [fromService, setFromService] = useState<string | null>(null);
     const [toService, setToService] = useState<string | null>(null);
-    const [currentStep, setCurrentStep] = useState<number>(1); // step 1 = selection, step 2 = details
+    const [currentStep, setCurrentStep] = useState<number>(1);
 
     const goToNextStep = () =>
     {
@@ -28,8 +28,8 @@ export default function ServiceSelectorMenu({ authenticatedServices }: ServiceSe
     const onAuthenticate = (serviceId: string) =>
     {
         console.log(`Authenticating ${serviceId}`);
+        // TODO: redirect to OAuth flow here
     };
-
 
     return (
         <div className="menu-container">
@@ -42,7 +42,7 @@ export default function ServiceSelectorMenu({ authenticatedServices }: ServiceSe
                     toService={toService}
                     setFromService={setFromService}
                     setToService={setToService}
-                    onTransferClick={goToNextStep} // pass to trigger step change
+                    onTransferClick={goToNextStep}
                 />
             )}
 

@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import "./PlaylistDetailsStep.css";
+import { playlistService } from "../../services/PlaylistService";
 
 type PlaylistDetailsStepProps = {
     fromService: string | null;
     toService: string | null;
     authenticatedServices: string[];
-    onAuthenticate: (serviceId: string) => void; // callback for authentication
-    onBack: () => void; // callback to go back a step
+    onAuthenticate: (serviceId: string) => void;
+    onBack: () => void;
 };
 
 export default function PlaylistDetailsStep({
@@ -18,59 +19,63 @@ export default function PlaylistDetailsStep({
 }: PlaylistDetailsStepProps)
 {
     const [playlistName, setPlaylistName] = useState("");
-    const [sourceLink, setSourceLink] = useState("");
 
     const isFromAuthenticated = fromService ? authenticatedServices.includes(fromService) : false;
     const isToAuthenticated = toService ? authenticatedServices.includes(toService) : false;
 
-    const handleCreate = () =>
+    const handleCreate = async () =>
     {
-        if (!fromService || !toService) return;
-        console.log({ fromService, toService, playlistName, sourceLink });
+        if (!fromService || !toService || !isFromAuthenticated || !isToAuthenticated) return;
+
+        try
+        {
+            const data = await playlistService.transfer(
+                // TODO: replace with real values
+            );
+            console.log("Playlist created:", data);
+            alert("✅ Playlist created successfully!");
+        } catch (err)
+        {
+            console.error(err);
+            alert("❌ Failed to create playlist");
+        }
     };
 
     return (
         <div className="details-step">
             <h2>Playlist Details</h2>
 
-            <div className="selected-services">
-                <p>
-                    From: <strong>{fromService || "Not selected"}</strong>
-                    {fromService && !isFromAuthenticated && (
-                        <span
-                            className="auth-warning"
+            <div className="service-auth-container">
+                {/* Left: FROM Service */}
+                <div className="service-box">
+                    <h3>From</h3>
+                    <p><strong>{fromService || "Not selected"}</strong></p>
+                    {fromService && (
+                        <button
+                            className={`auth-btn ${isFromAuthenticated ? "done" : ""}`}
                             onClick={() => onAuthenticate(fromService)}
-                            style={{ cursor: "pointer" }}
                         >
-                            {" "} - Authenticate if needed
-                        </span>
+                            {isFromAuthenticated ? "✔ Authenticated" : "Authenticate"}
+                        </button>
                     )}
-                </p>
+                </div>
 
-                <p>
-                    To: <strong>{toService || "Not selected"}</strong>
-                    {toService && !isToAuthenticated && (
-                        <span
-                            className="auth-warning"
+                {/* Right: TO Service */}
+                <div className="service-box">
+                    <h3>To</h3>
+                    <p><strong>{toService || "Not selected"}</strong></p>
+                    {toService && (
+                        <button
+                            className={`auth-btn ${isToAuthenticated ? "done" : ""}`}
                             onClick={() => onAuthenticate(toService)}
-                            style={{ cursor: "pointer" }}
                         >
-                            {" "} - Click here to authenticate
-                        </span>
+                            {isToAuthenticated ? "✔ Authenticated" : "Authenticate"}
+                        </button>
                     )}
-                </p>
+                </div>
             </div>
 
-            <div className="input-group">
-                <label>Source Playlist Link / Name</label>
-                <input
-                    type="text"
-                    placeholder="Enter playlist link or name"
-                    value={sourceLink}
-                    onChange={(e) => setSourceLink(e.target.value)}
-                />
-            </div>
-
+            {/* Input */}
             <div className="input-group">
                 <label>New Playlist Name (Optional)</label>
                 <input
@@ -81,20 +86,17 @@ export default function PlaylistDetailsStep({
                 />
             </div>
 
+            {/* Buttons */}
             <div className="details-buttons">
                 <button className="transfer-btn back-btn" onClick={onBack}>
                     ← Go Back
                 </button>
 
-                <button
-                    className={`transfer-btn ${fromService && toService && isToAuthenticated ? "active" : "disabled"}`}
-                    onClick={handleCreate}
-                    disabled={!(fromService && toService && isToAuthenticated)}
-                >
-                    {fromService && toService && isToAuthenticated
-                        ? "Create Playlist"
-                        : "Complete all steps"}
-                </button>
+                {isFromAuthenticated && isToAuthenticated && (
+                    <button className="transfer-btn active" onClick={handleCreate}>
+                        Create Playlist
+                    </button>
+                )}
             </div>
         </div>
     );

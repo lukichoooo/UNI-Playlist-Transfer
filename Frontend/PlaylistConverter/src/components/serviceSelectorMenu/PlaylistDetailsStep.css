@@ -1,5 +1,3 @@
-/* PlaylistDetailsStep.css */
-
 .details-step {
     display: flex;
     flex-direction: column;
@@ -16,20 +14,44 @@
     margin-bottom: 2rem;
 }
 
-.selected-services {
+/* Two-column layout */
+.service-auth-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 600px;
     margin-bottom: 2rem;
+}
+
+.service-box {
+    flex: 1;
     text-align: center;
-    font-size: 1.1rem;
+    background: #2c2c2c;
+    padding: 1rem;
+    border-radius: 12px;
+    margin: 0 0.5rem;
 }
 
-.selected-services p {
-    margin: 0.5rem 0;
-}
-
-.auth-warning {
-    color: #ff9800;
+.auth-btn {
+    margin-top: 1rem;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.95rem;
     font-weight: bold;
-    margin-left: 0.3rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background: #ff9800;
+    color: #fff;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.auth-btn:hover {
+    background: #e68900;
+    transform: scale(1.05);
+}
+
+.auth-btn.done {
+    background: #4caf50;
 }
 
 .input-group {
@@ -61,8 +83,14 @@
     box-shadow: 0 0 5px rgba(33, 150, 243, 0.5);
 }
 
-.transfer-btn {
+.details-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
     margin-top: 2rem;
+}
+
+.transfer-btn {
     padding: 0.8rem 1.6rem;
     font-size: 1rem;
     font-weight: bold;
@@ -72,22 +100,16 @@
     transition: background 0.2s ease, opacity 0.2s ease;
 }
 
-/* Fully active */
+.transfer-btn.back-btn {
+    background: #888;
+    color: #fff;
+}
+
 .transfer-btn.active {
     background: #2196f3;
     color: #fff;
-    opacity: 1;
-    cursor: pointer;
 }
 
 .transfer-btn.active:hover {
     background: #1976d2;
-}
-
-/* Nothing active */
-.transfer-btn.disabled {
-    background: #888;
-    color: #fff;
-    opacity: 0.4;
-    cursor: not-allowed;
 }

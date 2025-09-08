@@ -48,4 +48,12 @@ public class OAuthToken {
     public Long getUserId() {
         return id.getUserId();
     }
+
+    public void setUserId(Long userId) {
+        id.setUserId(userId);
+    }
+
+    public void setService(MusicService service) {
+        id.setService(service);
+    }
 }
