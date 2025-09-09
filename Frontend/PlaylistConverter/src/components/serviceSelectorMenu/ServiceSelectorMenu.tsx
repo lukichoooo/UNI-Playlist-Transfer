@@ -2,6 +2,7 @@ import { useState } from "react";
 import ServiceSelectionStep from "./ServiceSelectionStep";
 import PlaylistDetailsStep from "./PlaylistDetailsStep";
 import "./ServiceSelectorMenu.css";
+import { converterService, type StreamingPlatform } from "../../services/ConverterService";
 
 type ServiceSelectorMenuProps = {
     authenticatedServices: string[];
@@ -14,6 +15,7 @@ export default function ServiceSelectorMenu({ authenticatedServices }: ServiceSe
     const [fromService, setFromService] = useState<string | null>(null);
     const [toService, setToService] = useState<string | null>(null);
     const [currentStep, setCurrentStep] = useState<number>(1);
+    const [authenticated, setAuthenticated] = useState<string[]>(authenticatedServices);
 
     const goToNextStep = () =>
     {
@@ -25,11 +27,22 @@ export default function ServiceSelectorMenu({ authenticatedServices }: ServiceSe
         if (currentStep > 1) setCurrentStep(currentStep - 1);
     };
 
-    const onAuthenticate = (serviceId: string) =>
+
+    const onAuthenticate = async (platform: string) =>
     {
-        console.log(`Authenticating ${serviceId}`);
-        // TODO: redirect to OAuth flow here
+        try
+        {
+            await converterService.oauthLogin(platform as StreamingPlatform);
+            // After successful OAuth login, refresh authenticated services from backend
+            const updated = await converterService.getAuthenticatedServices();
+            setAuthenticated(updated.map(p => p.toUpperCase())); // make sure strings match
+            console.log(`Successfully authenticated ${platform}`);
+        } catch (err)
+        {
+            console.error(`Authentication failed for ${platform}:`, err);
+        }
     };
+
 
     return (
         <div className="menu-container">
@@ -50,7 +63,7 @@ export default function ServiceSelectorMenu({ authenticatedServices }: ServiceSe
                 <PlaylistDetailsStep
                     fromService={fromService}
                     toService={toService}
-                    authenticatedServices={authenticatedServices}
+                    authenticatedServices={authenticated}
                     onAuthenticate={onAuthenticate}
                     onBack={goBack}
                 />

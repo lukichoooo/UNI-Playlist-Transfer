@@ -11,12 +11,12 @@ type Props = {
 };
 
 const ALL_SERVICES = [
-    { id: "spotify", label: "Spotify", icon: "/icons/spotify.png" },
-    { id: "soundcloud", label: "SoundCloud", icon: "/icons/soundcloud.png" },
-    { id: "youtube", label: "YouTube", icon: "/icons/youtube.png" },
-    { id: "youtubemusic", label: "YT Music", icon: "/icons/youtubemusic.png" },
-    { id: "applemusic", label: "Apple Music", icon: "/icons/applemusic.png" },
-    { id: "deezer", label: "Deezer", icon: "/icons/deezer.png" },
+    { id: "SPOTIFY", label: "Spotify", icon: "/icons/spotify.png" },
+    { id: "SOUNDCLOUD", label: "SoundCloud", icon: "/icons/soundcloud.png" },
+    { id: "YOUTUBE", label: "YouTube", icon: "/icons/youtube.png" },
+    { id: "YOUTUBEMUSIC", label: "YT Music", icon: "/icons/youtubemusic.png" },
+    { id: "APPLEMUSIC", label: "Apple Music", icon: "/icons/applemusic.png" },
+    { id: "DEEZER", label: "Deezer", icon: "/icons/deezer.png" },
 ];
 
 const SERVICE_CLASSES: Record<string, string> = {

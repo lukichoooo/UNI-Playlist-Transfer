@@ -1,12 +1,11 @@
 import { useState } from "react";
 import "./PlaylistDetailsStep.css";
-import { playlistService } from "../../services/PlaylistService";
 
 type PlaylistDetailsStepProps = {
     fromService: string | null;
     toService: string | null;
     authenticatedServices: string[];
-    onAuthenticate: (serviceId: string) => void;
+    onAuthenticate: (platform: string) => void;
     onBack: () => void;
 };
 
@@ -26,6 +25,7 @@ export default function PlaylistDetailsStep({
     const handleCreate = async () =>
     {
         if (!fromService || !toService || !isFromAuthenticated || !isToAuthenticated) return;
+
     };
 
     return (

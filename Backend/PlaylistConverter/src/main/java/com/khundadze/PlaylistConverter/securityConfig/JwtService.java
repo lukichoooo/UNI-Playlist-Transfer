@@ -29,7 +29,7 @@ public class JwtService {
     }
 
     private static final String SECRET_KEY = "bWludXRlc2FmZXR5Y3JlYW1zcHJlYWR0aG9zZWV4dHJhZGVlcGx5bm9pc2VzdGFyZWQ=";
-    // TODO: change to env variable
+    // TODO: change to env variable, and change the secret key
 
     private Key getSigninKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);

@@ -43,7 +43,7 @@ public class SecurityConfig {
                                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                                 .requestMatchers("/home", "/error", "/api/auth/**").permitAll()
                                                 .anyRequest().authenticated())
-                                // OAuth2 login (used for Google/GitHub)
+                                // OAuth2 login (used for Google/GitHub) AND streaming OAuth
                                 .oauth2Login(oauth2 -> oauth2
                                                 .successHandler(oAuth2DispatcherSuccessHandler)) // clean and short
 
