@@ -3,7 +3,7 @@ package com.khundadze.PlaylistConverter.models_db;
 import java.time.Instant;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.khundadze.PlaylistConverter.enums.MusicService;
+import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
@@ -41,7 +41,7 @@ public class OAuthToken {
 
     // getters and setters (for id parts)
 
-    public MusicService getService() {
+    public StreamingPlatform getService() {
         return id.getService();
     }
 
@@ -53,7 +53,7 @@ public class OAuthToken {
         id.setUserId(userId);
     }
 
-    public void setService(MusicService service) {
+    public void setService(StreamingPlatform service) {
         id.setService(service);
     }
 }

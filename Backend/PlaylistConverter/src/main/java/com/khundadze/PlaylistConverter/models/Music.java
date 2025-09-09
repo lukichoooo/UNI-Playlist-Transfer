@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class Music { // TODO: maybe turn into a record (idk how this will be with redis)
+public class Music {
 
     private String id;
 

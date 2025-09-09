@@ -8,8 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.khundadze.PlaylistConverter.dtos.OAuthTokenResponseDto;
-import com.khundadze.PlaylistConverter.enums.MusicService;
+import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 import com.khundadze.PlaylistConverter.models_db.OAuthToken;
+import com.khundadze.PlaylistConverter.models_db.OAuthTokenId;
 import com.khundadze.PlaylistConverter.repo.OAuthTokenRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -19,9 +20,11 @@ import lombok.RequiredArgsConstructor;
 public class OAuthTokenService {
 
     private final OAuthTokenRepository tokenRepository;
+    private final OAuthTokenMapper mapper;
 
     @Transactional
-    public OAuthToken save(Long userId, MusicService service, String accessToken, String refreshToken, Instant expiry) {
+    public OAuthTokenResponseDto save(Long userId, StreamingPlatform service, String accessToken, String refreshToken,
+            Instant expiry) {
         Optional<OAuthToken> existing = tokenRepository.findByUserIdAndService(userId, service);
         OAuthToken token;
         if (existing.isPresent()) {
@@ -31,25 +34,24 @@ public class OAuthTokenService {
             token.setExpiresAt(expiry);
         } else {
             token = new OAuthToken();
-            token.setUserId(userId);
-            token.setService(service);
+            token.setId(new OAuthTokenId(userId, service));
             token.setAccessToken(accessToken);
             token.setRefreshToken(refreshToken);
             token.setExpiresAt(expiry);
         }
-        return tokenRepository.save(token);
+        return mapper.toOAuthTokenResponseDto(tokenRepository.save(token));
     }
 
     @Transactional(readOnly = true)
-    public OAuthTokenResponseDto getValidAccessTokenDto(Long userId, MusicService service) {
+    public OAuthTokenResponseDto getValidAccessTokenDto(Long userId, StreamingPlatform service) {
         return tokenRepository.findByUserIdAndService(userId, service)
                 .filter(token -> token.getExpiresAt() == null || token.getExpiresAt().isAfter(Instant.now()))
-                .map(token -> new OAuthTokenResponseDto(token.getAccessToken(), token.getService()))
+                .map(mapper::toOAuthTokenResponseDto)
                 .orElse(null);
     }
 
     @Transactional
-    public void deleteOAuthTokenForUser(Long userId, MusicService service) {
+    public void deleteOAuthTokenForUser(Long userId, StreamingPlatform service) {
         tokenRepository.findByUserIdAndService(userId, service)
                 .ifPresent(tokenRepository::delete);
     }
@@ -57,7 +59,7 @@ public class OAuthTokenService {
     @Transactional(readOnly = true)
     public List<OAuthTokenResponseDto> getAllOAuthTokensForUser(Long userId) {
         return tokenRepository.findAllByUser_Id(userId).stream()
-                .map(token -> new OAuthTokenResponseDto(token.getAccessToken(), token.getService()))
+                .map(mapper::toOAuthTokenResponseDto)
                 .toList();
     }
 

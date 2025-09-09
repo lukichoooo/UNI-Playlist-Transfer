@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import "./PlaylistDetailsStep.css";
 import { playlistService } from "../../services/PlaylistService";
 
@@ -26,19 +26,6 @@ export default function PlaylistDetailsStep({
     const handleCreate = async () =>
     {
         if (!fromService || !toService || !isFromAuthenticated || !isToAuthenticated) return;
-
-        try
-        {
-            const data = await playlistService.transfer(
-                // TODO: replace with real values
-            );
-            console.log("Playlist created:", data);
-            alert("✅ Playlist created successfully!");
-        } catch (err)
-        {
-            console.error(err);
-            alert("❌ Failed to create playlist");
-        }
     };
 
     return (

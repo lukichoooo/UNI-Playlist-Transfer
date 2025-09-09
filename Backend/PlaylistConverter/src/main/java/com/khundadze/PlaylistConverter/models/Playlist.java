@@ -3,6 +3,8 @@ package com.khundadze.PlaylistConverter.models;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -13,7 +15,7 @@ public class Playlist {
     private String id;
     private Long userId;
 
-    private String platform; // e.g., "spotify", "youtube"
+    private StreamingPlatform streamingPlatform; // e.g., "spotify", "youtube"
 
     @Builder.Default
     private List<Music> musics = new ArrayList<>();

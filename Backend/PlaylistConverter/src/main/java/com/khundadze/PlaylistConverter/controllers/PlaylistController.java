@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.khundadze.PlaylistConverter.dtos.CreatePlaylistDto;
 import com.khundadze.PlaylistConverter.dtos.GetPlaylistsDto;
 import com.khundadze.PlaylistConverter.dtos.OAuthTokenResponseDto;
+import com.khundadze.PlaylistConverter.models.Playlist;
 import com.khundadze.PlaylistConverter.services.OAuthTokenService;
 import com.khundadze.PlaylistConverter.streamingServices.MusicServiceManager;
 
@@ -36,7 +37,7 @@ public class PlaylistController { // TODO: implement
      * Create a playlist on the specified service.
      */
     @PostMapping("/create")
-    public ResponseEntity<String> createPlaylist(@RequestBody CreatePlaylistDto request) {
+    public ResponseEntity<Playlist> createPlaylist(@RequestBody CreatePlaylistDto request) {
         return null;
     }
 

@@ -2,7 +2,7 @@ package com.khundadze.PlaylistConverter.models_db;
 
 import java.io.Serializable;
 
-import com.khundadze.PlaylistConverter.enums.MusicService;
+import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
@@ -26,5 +26,5 @@ public class OAuthTokenId implements Serializable {
     private Long userId;
 
     @Enumerated(EnumType.STRING)
-    private MusicService service;
+    private StreamingPlatform service;
 }

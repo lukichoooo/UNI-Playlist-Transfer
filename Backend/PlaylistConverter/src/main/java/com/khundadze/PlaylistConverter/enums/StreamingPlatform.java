@@ -1,6 +1,6 @@
 package com.khundadze.PlaylistConverter.enums;
 
-public enum MusicService {
+public enum StreamingPlatform {
     SPOTIFY,
     YOUTUBE,
     SOUNDCLOUD,

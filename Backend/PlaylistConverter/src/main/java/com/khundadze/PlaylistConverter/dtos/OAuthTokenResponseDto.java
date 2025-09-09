@@ -1,9 +1,9 @@
 package com.khundadze.PlaylistConverter.dtos;
 
-import com.khundadze.PlaylistConverter.enums.MusicService;
+import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 
 public record OAuthTokenResponseDto(
         String accessToken,
-        MusicService service) {
+        StreamingPlatform service) {
 
 }

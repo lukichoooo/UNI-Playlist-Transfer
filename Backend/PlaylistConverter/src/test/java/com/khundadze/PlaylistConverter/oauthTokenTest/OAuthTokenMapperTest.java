@@ -8,7 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.khundadze.PlaylistConverter.dtos.OAuthTokenResponseDto;
-import com.khundadze.PlaylistConverter.enums.MusicService;
+import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 import com.khundadze.PlaylistConverter.models_db.OAuthToken;
 import com.khundadze.PlaylistConverter.models_db.OAuthTokenId;
 import com.khundadze.PlaylistConverter.models_db.User;
@@ -28,17 +28,17 @@ class OAuthTokenMapperTest {
         User user = new User();
         user.setId(42L);
 
-        OAuthTokenId id = mapper.toId(user, MusicService.SPOTIFY);
+        OAuthTokenId id = mapper.toId(user, StreamingPlatform.SPOTIFY);
 
         assertNotNull(id);
         assertEquals(42L, id.getUserId());
-        assertEquals(MusicService.SPOTIFY, id.getService());
+        assertEquals(StreamingPlatform.SPOTIFY, id.getService());
     }
 
     @Test
     void testToId_nullUser_throwsException() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> mapper.toId(null, MusicService.SPOTIFY));
+                () -> mapper.toId(null, StreamingPlatform.SPOTIFY));
         assertEquals("User and service must not be null", ex.getMessage());
     }
 
@@ -58,7 +58,7 @@ class OAuthTokenMapperTest {
         user.setId(1L);
 
         OAuthToken token = OAuthToken.builder()
-                .id(new OAuthTokenId(1L, MusicService.YOUTUBE))
+                .id(new OAuthTokenId(1L, StreamingPlatform.YOUTUBE))
                 .accessToken("abc123")
                 .refreshToken("refreshMe")
                 .build();
@@ -67,6 +67,6 @@ class OAuthTokenMapperTest {
 
         assertNotNull(dto);
         assertEquals("abc123", dto.accessToken());
-        assertEquals(MusicService.YOUTUBE, dto.service());
+        assertEquals(StreamingPlatform.YOUTUBE, dto.service());
     }
 }
