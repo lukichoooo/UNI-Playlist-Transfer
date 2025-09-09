@@ -12,5 +12,5 @@ import com.khundadze.PlaylistConverter.models_db.OAuthTokenId;
 public interface OAuthTokenRepository extends JpaRepository<OAuthToken, OAuthTokenId> {
     List<OAuthToken> findAllByUser_Id(Long userId);
 
-    Optional<OAuthToken> findByUserIdAndService(Long userId, StreamingPlatform service);
+    Optional<OAuthToken> findByIdUserIdAndIdService(Long userId, StreamingPlatform service);
 }

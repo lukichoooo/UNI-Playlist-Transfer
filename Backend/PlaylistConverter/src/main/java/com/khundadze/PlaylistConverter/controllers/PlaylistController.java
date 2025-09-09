@@ -8,9 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.khundadze.PlaylistConverter.dtos.CreatePlaylistDto;
-import com.khundadze.PlaylistConverter.dtos.GetPlaylistsDto;
 import com.khundadze.PlaylistConverter.dtos.OAuthTokenResponseDto;
+import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 import com.khundadze.PlaylistConverter.models.Playlist;
 import com.khundadze.PlaylistConverter.services.OAuthTokenService;
 import com.khundadze.PlaylistConverter.streamingServices.MusicServiceManager;
@@ -26,7 +25,7 @@ public class PlaylistController { // TODO: implement
     private final OAuthTokenService tokenService;
 
     /**
-     * Trigger OAuth2 login or return stored token for a service.
+     * Trigger OAuth2 login or return stored token for a streaming platform.
      */
     @PostMapping("/auth")
     public ResponseEntity<OAuthTokenResponseDto> authenticate(@RequestBody OAuthTokenResponseDto request) {
@@ -37,7 +36,10 @@ public class PlaylistController { // TODO: implement
      * Create a playlist on the specified service.
      */
     @PostMapping("/create")
-    public ResponseEntity<Playlist> createPlaylist(@RequestBody CreatePlaylistDto request) {
+    public ResponseEntity<Playlist> createPlaylist(@RequestBody StreamingPlatform platform,
+            String playlistName,
+            List<String> tracks,
+            String accessToken) {
         return null;
     }
 
@@ -45,7 +47,8 @@ public class PlaylistController { // TODO: implement
      * Get all playlists for a user on a specific service.
      */
     @PostMapping("/list")
-    public ResponseEntity<List<String>> getPlaylists(@RequestBody GetPlaylistsDto request) {
+    public ResponseEntity<List<String>> getPlaylists(@RequestBody StreamingPlatform service,
+            String accessToken) {
         return null;
     }
 }

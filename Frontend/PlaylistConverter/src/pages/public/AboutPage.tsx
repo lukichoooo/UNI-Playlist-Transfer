@@ -39,7 +39,7 @@ export default function AboutPage()
                     <h2 className="about-subtitle">Transparency & Trust</h2>
                     <p className="about-text">
                         We strive for full transparency. You can view our
-                        <a href="https://github.com/YourRepo" target="_blank" rel="noopener noreferrer">
+                        <a href="https://github.com/lukichoooo/Music-Playlist-Converter" target="_blank" rel="noopener noreferrer">
                             {" "}source code on GitHub
                         </a>, so you can see exactly how your data is handled.
                     </p>

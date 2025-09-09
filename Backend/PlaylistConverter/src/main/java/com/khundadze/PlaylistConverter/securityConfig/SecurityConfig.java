@@ -16,6 +16,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.khundadze.PlaylistConverter.authenticationMVC.AuthService;
+import com.khundadze.PlaylistConverter.securityConfig.oauth2ForPlatformAuth.OAuth2DispatcherSuccessHandler;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,7 +26,8 @@ public class SecurityConfig {
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                        AuthenticationFilter authenticationFilter, OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler)
+                        AuthenticationFilter authenticationFilter,
+                        OAuth2DispatcherSuccessHandler oAuth2DispatcherSuccessHandler)
                         throws Exception {
                 http
                                 .cors().and()
@@ -43,7 +45,7 @@ public class SecurityConfig {
                                                 .anyRequest().authenticated())
                                 // OAuth2 login (used for Google/GitHub)
                                 .oauth2Login(oauth2 -> oauth2
-                                                .successHandler(oAuth2LoginSuccessHandler)) // clean and short
+                                                .successHandler(oAuth2DispatcherSuccessHandler)) // clean and short
 
                                 // Logout
                                 .logout(logout -> logout

@@ -25,7 +25,7 @@ public class OAuthTokenService {
     @Transactional
     public OAuthTokenResponseDto save(Long userId, StreamingPlatform service, String accessToken, String refreshToken,
             Instant expiry) {
-        Optional<OAuthToken> existing = tokenRepository.findByUserIdAndService(userId, service);
+        Optional<OAuthToken> existing = tokenRepository.findByIdUserIdAndIdService(userId, service);
         OAuthToken token;
         if (existing.isPresent()) {
             token = existing.get();
@@ -44,7 +44,7 @@ public class OAuthTokenService {
 
     @Transactional(readOnly = true)
     public OAuthTokenResponseDto getValidAccessTokenDto(Long userId, StreamingPlatform service) {
-        return tokenRepository.findByUserIdAndService(userId, service)
+        return tokenRepository.findByIdUserIdAndIdService(userId, service)
                 .filter(token -> token.getExpiresAt() == null || token.getExpiresAt().isAfter(Instant.now()))
                 .map(mapper::toOAuthTokenResponseDto)
                 .orElse(null);
@@ -52,7 +52,7 @@ public class OAuthTokenService {
 
     @Transactional
     public void deleteOAuthTokenForUser(Long userId, StreamingPlatform service) {
-        tokenRepository.findByUserIdAndService(userId, service)
+        tokenRepository.findByIdUserIdAndIdService(userId, service)
                 .ifPresent(tokenRepository::delete);
     }
 
