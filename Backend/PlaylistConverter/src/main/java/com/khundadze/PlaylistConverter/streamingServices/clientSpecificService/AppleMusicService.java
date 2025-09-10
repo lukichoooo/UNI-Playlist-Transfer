@@ -18,7 +18,7 @@ public class AppleMusicService implements IMusicService {
     }
 
     @Override
-    public List<Music> getPlaylistsTracks(Long playlistId, String accessToken) {
+    public List<Music> getPlaylistsTracks(String accessToken, Long playlistId) {
         // TODO: implement Apple Music API call
         return null;
     }

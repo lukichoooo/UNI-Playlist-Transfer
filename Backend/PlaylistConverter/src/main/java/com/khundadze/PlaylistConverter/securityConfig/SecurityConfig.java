@@ -42,10 +42,13 @@ public class SecurityConfig {
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                                 .requestMatchers("/home", "/error", "/api/auth/**").permitAll()
+                                                .requestMatchers("/login/oauth2/**").permitAll()
                                                 .anyRequest().authenticated())
                                 // OAuth2 login (used for Google/GitHub) AND streaming OAuth
                                 .oauth2Login(oauth2 -> oauth2
-                                                .successHandler(oAuth2DispatcherSuccessHandler)) // clean and short
+                                                .successHandler(oAuth2DispatcherSuccessHandler)) // let another class
+                                                                                                 // handle different
+                                                                                                 // auth methods
 
                                 // Logout
                                 .logout(logout -> logout

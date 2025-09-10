@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MusicServiceManager {
 
-    private final StreamingServiceRegistry registry;
+    private final StreamingPlatformRegistry registry;
     private final OAuthTokenService tokenService;
 
     private OAuthTokenResponseDto getTokenOrThrow(StreamingPlatform service) {
@@ -37,7 +37,7 @@ public class MusicServiceManager {
     public List<Music> getPlaylistTracks(StreamingPlatform platform, Long playlistId) {
         IMusicService svc = registry.getService(platform);
         String token = getTokenOrThrow(platform).accessToken();
-        return svc.getPlaylistsTracks(playlistId, token);
+        return svc.getPlaylistsTracks(token, playlistId);
     }
 
     public Playlist createPlaylist(StreamingPlatform platform, String playlistName, List<String> trackIds) {
@@ -46,6 +46,7 @@ public class MusicServiceManager {
         return svc.createPlaylist(token, playlistName, trackIds);
     }
 
+    // TODO: main method of the whole app
     public Playlist transferPlaylist(StreamingPlatform fromPlatform, StreamingPlatform toPlatform, Long fromId,
             Long toId) {
 
@@ -55,12 +56,12 @@ public class MusicServiceManager {
         IMusicService svcTo = registry.getService(toPlatform);
         String toToken = getTokenOrThrow(toPlatform).accessToken();
 
-        List<Music> tracks = svcFrom.getPlaylistsTracks(fromId, fromToken);
+        List<Music> tracks = svcFrom.getPlaylistsTracks(fromToken, fromId);
 
         // TODO: transfer playlist
 
         Playlist playlist = svcTo.createPlaylist(toToken, toToken, null);
 
-        return null;// TODO:
+        return null;
     }
 }

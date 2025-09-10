@@ -18,7 +18,7 @@ public class SoundCloudService implements IMusicService {
     }
 
     @Override
-    public List<Music> getPlaylistsTracks(Long playlistId, String accessToken) {
+    public List<Music> getPlaylistsTracks(String accessToken, Long playlistId) {
         // TODO: implement SoundCloud API call
         return null;
     }

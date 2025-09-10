@@ -18,7 +18,7 @@ public class DeezerService implements IMusicService {
     }
 
     @Override
-    public List<Music> getPlaylistsTracks(Long playlistId, String accessToken) {
+    public List<Music> getPlaylistsTracks(String accessToken, Long playlistId) {
         // TODO: implement Deezer API call
         return null;
     }

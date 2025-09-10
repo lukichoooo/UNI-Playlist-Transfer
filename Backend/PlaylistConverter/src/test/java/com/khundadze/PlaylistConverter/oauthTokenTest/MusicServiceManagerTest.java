@@ -21,12 +21,12 @@ import com.khundadze.PlaylistConverter.models.Playlist;
 import com.khundadze.PlaylistConverter.services.OAuthTokenService;
 import com.khundadze.PlaylistConverter.streamingServices.IMusicService;
 import com.khundadze.PlaylistConverter.streamingServices.MusicServiceManager;
-import com.khundadze.PlaylistConverter.streamingServices.StreamingServiceRegistry;
+import com.khundadze.PlaylistConverter.streamingServices.StreamingPlatformRegistry;
 
 class MusicServiceManagerTest {
 
     @Mock
-    private StreamingServiceRegistry registry;
+    private StreamingPlatformRegistry registry;
 
     @Mock
     private OAuthTokenService tokenService;
@@ -77,14 +77,14 @@ class MusicServiceManagerTest {
 
         when(tokenService.getValidAccessTokenDto(platform)).thenReturn(tokenDto);
         when(registry.getService(platform)).thenReturn(spotifyService);
-        when(spotifyService.getPlaylistsTracks(42L, "token123")).thenReturn(List.of(track));
+        when(spotifyService.getPlaylistsTracks("token123", 42L)).thenReturn(List.of(track));
 
         List<Music> result = manager.getPlaylistTracks(platform, 42L);
 
         assertEquals(1, result.size());
         assertEquals("Song 1", result.get(0).getName());
         verify(tokenService).getValidAccessTokenDto(platform);
-        verify(spotifyService).getPlaylistsTracks(42L, "token123");
+        verify(spotifyService).getPlaylistsTracks("token123", 42L);
     }
 
     @Test

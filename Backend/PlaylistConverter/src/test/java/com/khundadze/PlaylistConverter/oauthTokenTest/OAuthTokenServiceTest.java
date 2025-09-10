@@ -54,7 +54,7 @@ class OAuthTokenServiceTest {
                                 .expiresAt(Instant.now())
                                 .build();
 
-                when(tokenRepository.findByIdUserIdAndIdService(1L, StreamingPlatform.SPOTIFY))
+                when(tokenRepository.findByIdUserIdAndIdPlatform(1L, StreamingPlatform.SPOTIFY))
                                 .thenReturn(Optional.of(existing));
                 when(tokenRepository.save(existing)).thenReturn(existing);
                 when(mapper.toOAuthTokenResponseDto(existing))
@@ -70,7 +70,7 @@ class OAuthTokenServiceTest {
         @Test
         void save_shouldCreateNewToken() {
                 when(userProvider.getId()).thenReturn(2L);
-                when(tokenRepository.findByIdUserIdAndIdService(2L, StreamingPlatform.YOUTUBE))
+                when(tokenRepository.findByIdUserIdAndIdPlatform(2L, StreamingPlatform.YOUTUBE))
                                 .thenReturn(Optional.empty());
 
                 OAuthTokenId id = new OAuthTokenId(2L, StreamingPlatform.YOUTUBE);
@@ -103,7 +103,7 @@ class OAuthTokenServiceTest {
                                 .expiresAt(Instant.now().plusSeconds(60))
                                 .build();
 
-                when(tokenRepository.findByIdUserIdAndIdService(1L, StreamingPlatform.SOUNDCLOUD))
+                when(tokenRepository.findByIdUserIdAndIdPlatform(1L, StreamingPlatform.SOUNDCLOUD))
                                 .thenReturn(Optional.of(token));
                 when(mapper.toOAuthTokenResponseDto(token))
                                 .thenReturn(new OAuthTokenResponseDto("valid", StreamingPlatform.SOUNDCLOUD));
@@ -126,7 +126,7 @@ class OAuthTokenServiceTest {
                                 .expiresAt(Instant.now().minusSeconds(10))
                                 .build();
 
-                when(tokenRepository.findByIdUserIdAndIdService(1L, StreamingPlatform.SOUNDCLOUD))
+                when(tokenRepository.findByIdUserIdAndIdPlatform(1L, StreamingPlatform.SOUNDCLOUD))
                                 .thenReturn(Optional.of(token));
 
                 assertNull(service.getValidAccessTokenDto(StreamingPlatform.SOUNDCLOUD));
@@ -139,7 +139,7 @@ class OAuthTokenServiceTest {
                 OAuthTokenId id = new OAuthTokenId(1L, StreamingPlatform.SPOTIFY);
                 OAuthToken token = OAuthToken.builder().id(id).build();
 
-                when(tokenRepository.findByIdUserIdAndIdService(1L, StreamingPlatform.SPOTIFY))
+                when(tokenRepository.findByIdUserIdAndIdPlatform(1L, StreamingPlatform.SPOTIFY))
                                 .thenReturn(Optional.of(token));
 
                 service.deleteOAuthTokenForUser(StreamingPlatform.SPOTIFY);

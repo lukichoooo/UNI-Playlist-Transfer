@@ -10,11 +10,8 @@ import com.khundadze.PlaylistConverter.streamingServices.clientSpecificService.S
 import com.khundadze.PlaylistConverter.streamingServices.clientSpecificService.SpotifyService;
 import com.khundadze.PlaylistConverter.streamingServices.clientSpecificService.YouTubeService;
 
-import lombok.RequiredArgsConstructor;
-
 @Component
-@RequiredArgsConstructor
-public class StreamingServiceRegistry { // TODO: add all streaming platforms services
+public class StreamingPlatformRegistry { // TODO: add all streaming platforms services
 
     private final SpotifyService spotifyService;
     private final YouTubeService youTubeService;
@@ -22,7 +19,7 @@ public class StreamingServiceRegistry { // TODO: add all streaming platforms ser
 
     private final Map<StreamingPlatform, IMusicService> serviceMap;
 
-    public StreamingServiceRegistry(SpotifyService spotifyService,
+    public StreamingPlatformRegistry(SpotifyService spotifyService,
             YouTubeService youTubeService,
             SoundCloudService soundCloudService) {
         this.spotifyService = spotifyService;

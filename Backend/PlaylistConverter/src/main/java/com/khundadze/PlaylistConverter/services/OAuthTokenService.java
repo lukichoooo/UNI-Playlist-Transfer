@@ -29,7 +29,7 @@ public class OAuthTokenService {
             Instant expiry) {
         Long userId = userProvider.getId();
 
-        Optional<OAuthToken> existing = tokenRepository.findByIdUserIdAndIdService(userId, service);
+        Optional<OAuthToken> existing = tokenRepository.findByIdUserIdAndIdPlatform(userId, service);
         OAuthToken token;
         if (existing.isPresent()) {
             token = existing.get();
@@ -50,7 +50,7 @@ public class OAuthTokenService {
     public OAuthTokenResponseDto getValidAccessTokenDto(StreamingPlatform service) {
         Long userId = userProvider.getId();
 
-        return tokenRepository.findByIdUserIdAndIdService(userId, service)
+        return tokenRepository.findByIdUserIdAndIdPlatform(userId, service)
                 .filter(token -> token.getExpiresAt() == null || token.getExpiresAt().isAfter(Instant.now()))
                 .map(mapper::toOAuthTokenResponseDto)
                 .orElse(null);
@@ -60,7 +60,7 @@ public class OAuthTokenService {
     public void deleteOAuthTokenForUser(StreamingPlatform service) {
         Long userId = userProvider.getId();
 
-        tokenRepository.findByIdUserIdAndIdService(userId, service)
+        tokenRepository.findByIdUserIdAndIdPlatform(userId, service)
                 .ifPresent(tokenRepository::delete);
     }
 
