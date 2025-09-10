@@ -27,21 +27,22 @@ public class ConverterController { // TODO: implement
     /**
      * Create a playlist on the specified service.
      */
-    @PostMapping("/create")
-    public ResponseEntity<Playlist> createPlaylist(@RequestBody StreamingPlatform platform,
-            String playlistName,
-            List<String> tracks,
-            String accessToken) {
-        return null;
+    @PostMapping("/convert")
+    public ResponseEntity<Playlist> convertPlaylist(@RequestBody StreamingPlatform fromPlatform,
+            StreamingPlatform toPlatform, Long fromId,
+            Long toId) {
+        Playlist playlist = musicServiceManager.transferPlaylist(fromPlatform, toPlatform, fromId, toId);
+        return ResponseEntity.ok(playlist);
     }
 
     /**
-     * Get all playlists for a user on a specific service.
+     * TODO: STORE PLAYLISTS IN CACHE
      */
     @GetMapping("/list")
-    public ResponseEntity<List<String>> getPlaylists(@RequestBody StreamingPlatform service,
+    public ResponseEntity<List<Playlist>> getPlaylists(@RequestBody StreamingPlatform service,
             String accessToken) {
-        return null;
+        List<Playlist> playlists = musicServiceManager.getUsersPlaylists(service);
+        return ResponseEntity.ok(playlists);
     }
 
     @GetMapping("/authenticatedPlatforms")

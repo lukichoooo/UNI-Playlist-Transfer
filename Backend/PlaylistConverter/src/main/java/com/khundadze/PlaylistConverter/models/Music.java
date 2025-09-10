@@ -9,7 +9,7 @@ public class Music {
 
     private String id;
 
-    private String title;
+    private String name;
     private String artist;
     private String album;
 }

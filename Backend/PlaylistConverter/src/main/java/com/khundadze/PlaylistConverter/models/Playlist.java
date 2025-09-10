@@ -12,12 +12,20 @@ import lombok.Data;
 @Builder
 public class Playlist {
 
-    private String id;
-    private Long userId;
+    private Long id; // id on the platform
+    private Long userId; // owner
+    private String name;
 
     private StreamingPlatform streamingPlatform; // e.g., "spotify", "youtube"
 
     @Builder.Default
     private List<Music> musics = new ArrayList<>();
-    private String name;
+
+    public void addMusic(Music music) {
+        musics.add(music);
+    }
+
+    public void removeMusic(Music music) {
+        musics.remove(music);
+    }
 }
