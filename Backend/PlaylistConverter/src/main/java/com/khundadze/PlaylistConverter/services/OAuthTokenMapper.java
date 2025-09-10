@@ -19,6 +19,6 @@ public class OAuthTokenMapper {
     }
 
     public OAuthTokenResponseDto toOAuthTokenResponseDto(OAuthToken token) {
-        return new OAuthTokenResponseDto(token.getAccessToken(), token.getService());
+        return new OAuthTokenResponseDto(token.getAccessToken(), token.getPlatform());
     }
 }

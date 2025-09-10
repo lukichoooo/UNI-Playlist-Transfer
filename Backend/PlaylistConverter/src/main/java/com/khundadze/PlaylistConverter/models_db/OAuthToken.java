@@ -41,8 +41,12 @@ public class OAuthToken {
 
     // getters and setters (for id parts)
 
-    public StreamingPlatform getService() {
-        return id.getService();
+    public StreamingPlatform getPlatform() {
+        return id.getPlatform();
+    }
+
+    public void setPlatform(StreamingPlatform service) {
+        id.setPlatform(service);
     }
 
     public Long getUserId() {
@@ -53,7 +57,4 @@ public class OAuthToken {
         id.setUserId(userId);
     }
 
-    public void setService(StreamingPlatform service) {
-        id.setService(service);
-    }
 }

@@ -46,6 +46,8 @@ public class ConverterController { // TODO: implement
 
     @GetMapping("/authenticatedPlatforms")
     public ResponseEntity<List<StreamingPlatform>> getAuthenticatedPlatforms() {
-        return null;
+        List<StreamingPlatform> platforms = tokenService.getAuthenticatedPlatforms();
+        return ResponseEntity.ok(platforms);
     }
+
 }

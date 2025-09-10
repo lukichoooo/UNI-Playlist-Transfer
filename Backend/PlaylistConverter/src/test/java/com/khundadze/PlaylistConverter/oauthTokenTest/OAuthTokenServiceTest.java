@@ -1,11 +1,8 @@
 package com.khundadze.PlaylistConverter.oauthTokenTest;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.time.Instant;
 import java.util.List;
@@ -22,6 +19,7 @@ import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 import com.khundadze.PlaylistConverter.models_db.OAuthToken;
 import com.khundadze.PlaylistConverter.models_db.OAuthTokenId;
 import com.khundadze.PlaylistConverter.repo.OAuthTokenRepository;
+import com.khundadze.PlaylistConverter.services.CurrentUserProvider;
 import com.khundadze.PlaylistConverter.services.OAuthTokenMapper;
 import com.khundadze.PlaylistConverter.services.OAuthTokenService;
 
@@ -33,18 +31,21 @@ class OAuthTokenServiceTest {
         @Mock
         private OAuthTokenMapper mapper;
 
+        @Mock
+        private CurrentUserProvider userProvider;
+
         @InjectMocks
         private OAuthTokenService service;
 
-        private AutoCloseable closeable;
-
         @BeforeEach
         void init() {
-                closeable = MockitoAnnotations.openMocks(this);
+                MockitoAnnotations.openMocks(this);
         }
 
         @Test
         void save_shouldUpdateExistingToken() {
+                when(userProvider.getId()).thenReturn(1L);
+
                 OAuthTokenId id = new OAuthTokenId(1L, StreamingPlatform.SPOTIFY);
                 OAuthToken existing = OAuthToken.builder()
                                 .id(id)
@@ -59,7 +60,7 @@ class OAuthTokenServiceTest {
                 when(mapper.toOAuthTokenResponseDto(existing))
                                 .thenReturn(new OAuthTokenResponseDto("newAccess", StreamingPlatform.SPOTIFY));
 
-                OAuthTokenResponseDto result = service.save(1L, StreamingPlatform.SPOTIFY, "newAccess", "newRef",
+                OAuthTokenResponseDto result = service.save(StreamingPlatform.SPOTIFY, "newAccess", "newRef",
                                 Instant.now().plusSeconds(100));
 
                 assertEquals("newAccess", result.accessToken());
@@ -68,6 +69,7 @@ class OAuthTokenServiceTest {
 
         @Test
         void save_shouldCreateNewToken() {
+                when(userProvider.getId()).thenReturn(2L);
                 when(tokenRepository.findByIdUserIdAndIdService(2L, StreamingPlatform.YOUTUBE))
                                 .thenReturn(Optional.empty());
 
@@ -83,7 +85,7 @@ class OAuthTokenServiceTest {
                 when(mapper.toOAuthTokenResponseDto(newToken))
                                 .thenReturn(new OAuthTokenResponseDto("acc", StreamingPlatform.YOUTUBE));
 
-                OAuthTokenResponseDto result = service.save(2L, StreamingPlatform.YOUTUBE, "acc", "ref", Instant.now());
+                OAuthTokenResponseDto result = service.save(StreamingPlatform.YOUTUBE, "acc", "ref", Instant.now());
 
                 assertEquals("acc", result.accessToken());
                 assertEquals(StreamingPlatform.YOUTUBE, result.service());
@@ -92,6 +94,8 @@ class OAuthTokenServiceTest {
 
         @Test
         void getValidAccessTokenDto_shouldReturnDtoIfValid() {
+                when(userProvider.getId()).thenReturn(1L);
+
                 OAuthTokenId id = new OAuthTokenId(1L, StreamingPlatform.SOUNDCLOUD);
                 OAuthToken token = OAuthToken.builder()
                                 .id(id)
@@ -104,7 +108,7 @@ class OAuthTokenServiceTest {
                 when(mapper.toOAuthTokenResponseDto(token))
                                 .thenReturn(new OAuthTokenResponseDto("valid", StreamingPlatform.SOUNDCLOUD));
 
-                OAuthTokenResponseDto result = service.getValidAccessTokenDto(1L, StreamingPlatform.SOUNDCLOUD);
+                OAuthTokenResponseDto result = service.getValidAccessTokenDto(StreamingPlatform.SOUNDCLOUD);
 
                 assertNotNull(result);
                 assertEquals("valid", result.accessToken());
@@ -113,6 +117,8 @@ class OAuthTokenServiceTest {
 
         @Test
         void getValidAccessTokenDto_shouldReturnNullIfExpired() {
+                when(userProvider.getId()).thenReturn(1L);
+
                 OAuthTokenId id = new OAuthTokenId(1L, StreamingPlatform.SOUNDCLOUD);
                 OAuthToken token = OAuthToken.builder()
                                 .id(id)
@@ -123,24 +129,28 @@ class OAuthTokenServiceTest {
                 when(tokenRepository.findByIdUserIdAndIdService(1L, StreamingPlatform.SOUNDCLOUD))
                                 .thenReturn(Optional.of(token));
 
-                assertNull(service.getValidAccessTokenDto(1L, StreamingPlatform.SOUNDCLOUD));
+                assertNull(service.getValidAccessTokenDto(StreamingPlatform.SOUNDCLOUD));
         }
 
         @Test
         void deleteOAuthTokenForUser_shouldDeleteIfExists() {
+                when(userProvider.getId()).thenReturn(1L);
+
                 OAuthTokenId id = new OAuthTokenId(1L, StreamingPlatform.SPOTIFY);
                 OAuthToken token = OAuthToken.builder().id(id).build();
 
                 when(tokenRepository.findByIdUserIdAndIdService(1L, StreamingPlatform.SPOTIFY))
                                 .thenReturn(Optional.of(token));
 
-                service.deleteOAuthTokenForUser(1L, StreamingPlatform.SPOTIFY);
+                service.deleteOAuthTokenForUser(StreamingPlatform.SPOTIFY);
 
                 verify(tokenRepository).delete(token);
         }
 
         @Test
         void getAllOAuthTokensForUser_shouldReturnDtos() {
+                when(userProvider.getId()).thenReturn(5L);
+
                 OAuthTokenId id1 = new OAuthTokenId(5L, StreamingPlatform.SPOTIFY);
                 OAuthToken token1 = OAuthToken.builder().id(id1).accessToken("a1").build();
 
@@ -154,7 +164,7 @@ class OAuthTokenServiceTest {
                 when(mapper.toOAuthTokenResponseDto(token2))
                                 .thenReturn(new OAuthTokenResponseDto("a2", StreamingPlatform.YOUTUBE));
 
-                List<OAuthTokenResponseDto> result = service.getAllOAuthTokensForUser(5L);
+                List<OAuthTokenResponseDto> result = service.getAllOAuthTokensForUser();
 
                 assertEquals(2, result.size());
                 assertEquals("a1", result.get(0).accessToken());
@@ -163,4 +173,25 @@ class OAuthTokenServiceTest {
                 assertEquals(StreamingPlatform.YOUTUBE, result.get(1).service());
         }
 
+        @Test
+        void getAuthenticatedPlatforms_shouldReturnDistinctPlatforms() {
+                when(userProvider.getId()).thenReturn(5L);
+
+                OAuthTokenId id1 = new OAuthTokenId(5L, StreamingPlatform.SPOTIFY);
+                OAuthToken token1 = OAuthToken.builder().id(id1).accessToken("a1").build();
+
+                OAuthTokenId id2 = new OAuthTokenId(5L, StreamingPlatform.YOUTUBE);
+                OAuthToken token2 = OAuthToken.builder().id(id2).accessToken("a2").build();
+
+                OAuthTokenId id3 = new OAuthTokenId(5L, StreamingPlatform.SPOTIFY);
+                OAuthToken token3 = OAuthToken.builder().id(id3).accessToken("a3").build();
+
+                when(tokenRepository.findAllByUser_Id(5L)).thenReturn(List.of(token1, token2, token3));
+
+                List<StreamingPlatform> result = service.getAuthenticatedPlatforms();
+
+                assertEquals(2, result.size());
+                assertTrue(result.contains(StreamingPlatform.SPOTIFY));
+                assertTrue(result.contains(StreamingPlatform.YOUTUBE));
+        }
 }

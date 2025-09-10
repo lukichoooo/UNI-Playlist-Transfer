@@ -12,7 +12,7 @@ import java.util.List;
 public class SpotifyService implements IMusicService {
 
     @Override
-    public List<Playlist> getUsersPlaylists(Long userId, String accessToken) {
+    public List<Playlist> getUsersPlaylists(String accessToken) {
         // TODO: implement Spotify API call
         return null;
     }
@@ -24,7 +24,7 @@ public class SpotifyService implements IMusicService {
     }
 
     @Override
-    public Playlist createPlaylist(Long userId, String accessToken, String playlistName, List<String> trackIds) {
+    public Playlist createPlaylist(String accessToken, String playlistName, List<String> trackIds) {
         // TODO: implement Spotify API call
         return null;
     }

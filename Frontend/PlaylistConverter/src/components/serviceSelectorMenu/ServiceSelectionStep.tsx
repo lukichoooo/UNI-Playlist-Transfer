@@ -20,12 +20,12 @@ const ALL_SERVICES = [
 ];
 
 const SERVICE_CLASSES: Record<string, string> = {
-    spotify: "spotify-selected",
-    soundcloud: "soundcloud-selected",
-    youtube: "youtube-selected",
-    youtubemusic: "youtubemusic-selected",
-    applemusic: "applemusic-selected",
-    deezer: "deezer-selected",
+    SPOTIFY: "spotify-selected",
+    SOUNDCLOUD: "soundcloud-selected",
+    YOUTUBE: "youtube-selected",
+    YOUTUBEMUSIC: "youtubemusic-selected",
+    APPLEMUSIC: "applemusic-selected",
+    DEEZER: "deezer-selected",
 };
 
 export default function ServiceSelectionStep({

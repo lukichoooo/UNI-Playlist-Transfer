@@ -12,7 +12,7 @@ import java.util.List;
 public class YouTubeService implements IMusicService {
 
     @Override
-    public List<Playlist> getUsersPlaylists(Long userId, String accessToken) {
+    public List<Playlist> getUsersPlaylists(String accessToken) {
         // TODO: implement YouTube Data API call
         return null;
     }
@@ -24,7 +24,7 @@ public class YouTubeService implements IMusicService {
     }
 
     @Override
-    public Playlist createPlaylist(Long userId, String accessToken, String playlistName, List<String> trackIds) {
+    public Playlist createPlaylist(String accessToken, String playlistName, List<String> trackIds) {
         // TODO: implement YouTube Data API call
         return null;
     }

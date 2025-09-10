@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,9 +24,13 @@ public class OAuthTokenService {
     private final OAuthTokenRepository tokenRepository;
     private final OAuthTokenMapper mapper;
 
+    private final CurrentUserProvider userProvider;
+
     @Transactional
-    public OAuthTokenResponseDto save(Long userId, StreamingPlatform service, String accessToken, String refreshToken,
+    public OAuthTokenResponseDto save(StreamingPlatform service, String accessToken, String refreshToken,
             Instant expiry) {
+        Long userId = userProvider.getId();
+
         Optional<OAuthToken> existing = tokenRepository.findByIdUserIdAndIdService(userId, service);
         OAuthToken token;
         if (existing.isPresent()) {
@@ -43,7 +49,9 @@ public class OAuthTokenService {
     }
 
     @Transactional(readOnly = true)
-    public OAuthTokenResponseDto getValidAccessTokenDto(Long userId, StreamingPlatform service) {
+    public OAuthTokenResponseDto getValidAccessTokenDto(StreamingPlatform service) {
+        Long userId = userProvider.getId();
+
         return tokenRepository.findByIdUserIdAndIdService(userId, service)
                 .filter(token -> token.getExpiresAt() == null || token.getExpiresAt().isAfter(Instant.now()))
                 .map(mapper::toOAuthTokenResponseDto)
@@ -51,15 +59,26 @@ public class OAuthTokenService {
     }
 
     @Transactional
-    public void deleteOAuthTokenForUser(Long userId, StreamingPlatform service) {
+    public void deleteOAuthTokenForUser(StreamingPlatform service) {
+        Long userId = userProvider.getId();
+
         tokenRepository.findByIdUserIdAndIdService(userId, service)
                 .ifPresent(tokenRepository::delete);
     }
 
     @Transactional(readOnly = true)
-    public List<OAuthTokenResponseDto> getAllOAuthTokensForUser(Long userId) {
+    public List<OAuthTokenResponseDto> getAllOAuthTokensForUser() {
+        Long userId = userProvider.getId();
+        return tokenRepository.findAllByUser_Id(userId).stream().map(mapper::toOAuthTokenResponseDto).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<StreamingPlatform> getAuthenticatedPlatforms() {
+        Long userId = userProvider.getId();
+
         return tokenRepository.findAllByUser_Id(userId).stream()
-                .map(mapper::toOAuthTokenResponseDto)
+                .map(OAuthToken::getPlatform)
+                .distinct()
                 .toList();
     }
 

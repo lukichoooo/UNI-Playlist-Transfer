@@ -26,5 +26,5 @@ public class OAuthTokenId implements Serializable {
     private Long userId;
 
     @Enumerated(EnumType.STRING)
-    private StreamingPlatform service;
+    private StreamingPlatform platform;
 }

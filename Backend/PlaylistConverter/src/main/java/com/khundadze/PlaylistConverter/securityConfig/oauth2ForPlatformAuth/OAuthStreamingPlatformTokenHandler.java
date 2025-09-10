@@ -14,6 +14,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
+import com.khundadze.PlaylistConverter.services.CurrentUserProvider;
 import com.khundadze.PlaylistConverter.services.OAuthTokenService;
 
 import jakarta.servlet.ServletException;
@@ -29,6 +30,8 @@ public class OAuthStreamingPlatformTokenHandler implements AuthenticationSuccess
     private final OAuth2AuthorizedClientService authorizedClientService;
     private final String frontendUrl = "http://localhost:5173";
 
+    private final CurrentUserProvider userProvider;
+
     @Override
     public void onAuthenticationSuccess(
             HttpServletRequest request,
@@ -43,9 +46,9 @@ public class OAuthStreamingPlatformTokenHandler implements AuthenticationSuccess
         // Get platform enum from registrationId
         StreamingPlatform platform = StreamingPlatform.fromString(oauthToken.getAuthorizedClientRegistrationId());
 
-        // Get user attributes
-        Map<String, Object> attributes = oauthToken.getPrincipal().getAttributes();
-        Long userId = extractUserId(attributes);
+        // // Get user attributes
+        // Map<String, Object> attributes = oauthToken.getPrincipal().getAttributes();
+        // Long userId = extractUserId(attributes);
 
         // Fetch the OAuth2AuthorizedClient from the service
         OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(
@@ -61,28 +64,29 @@ public class OAuthStreamingPlatformTokenHandler implements AuthenticationSuccess
         OAuth2RefreshToken refreshToken = client.getRefreshToken();
         Instant expiry = accessToken != null ? accessToken.getExpiresAt() : null;
 
-        // Save token to DB
-        tokenService.save(
-                userId,
-                platform,
-                accessToken != null ? accessToken.getTokenValue() : null,
-                refreshToken != null ? refreshToken.getTokenValue() : null,
-                expiry);
+        if (userProvider.isLoggedIn()) {
+            // Save token to DB
+            tokenService.save(
+                    platform,
+                    accessToken != null ? accessToken.getTokenValue() : null,
+                    refreshToken != null ? refreshToken.getTokenValue() : null,
+                    expiry);
+        }
 
         // Redirect to frontend
         response.sendRedirect(frontendUrl + "/platform-oauth-success?platform=" + platform);
     }
 
-    private Long extractUserId(Map<String, Object> attributes) {
-        if (attributes.containsKey("id")) {
-            Object idObj = attributes.get("id");
-            if (idObj instanceof Number number)
-                return number.longValue();
-            try {
-                return Long.parseLong(idObj.toString());
-            } catch (NumberFormatException ignored) {
-            }
-        }
-        return System.currentTimeMillis(); // fallback
-    }
+    // private Long extractUserId(Map<String, Object> attributes) {
+    // if (attributes.containsKey("id")) {
+    // Object idObj = attributes.get("id");
+    // if (idObj instanceof Number number)
+    // return number.longValue();
+    // try {
+    // return Long.parseLong(idObj.toString());
+    // } catch (NumberFormatException ignored) {
+    // }
+    // }
+    // return System.currentTimeMillis(); // fallback
+    // }
 }

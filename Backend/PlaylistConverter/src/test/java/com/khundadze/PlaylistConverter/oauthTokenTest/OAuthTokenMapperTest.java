@@ -32,7 +32,7 @@ class OAuthTokenMapperTest {
 
         assertNotNull(id);
         assertEquals(42L, id.getUserId());
-        assertEquals(StreamingPlatform.SPOTIFY, id.getService());
+        assertEquals(StreamingPlatform.SPOTIFY, id.getPlatform());
     }
 
     @Test

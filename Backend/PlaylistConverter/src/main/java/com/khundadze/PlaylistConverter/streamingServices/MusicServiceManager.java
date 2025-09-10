@@ -24,6 +24,7 @@ public class MusicServiceManager {
     private final SpotifyService spotifyService;
     private final YouTubeService youTubeService;
     private final SoundCloudService soundCloudService;
+
     private final OAuthTokenService tokenService;
 
     private Map<StreamingPlatform, IMusicService> getServiceMap() {
@@ -40,29 +41,29 @@ public class MusicServiceManager {
         return svc;
     }
 
-    private OAuthTokenResponseDto getTokenDtoOrThrow(Long userId, StreamingPlatform service) {
-        OAuthTokenResponseDto tokenDto = tokenService.getValidAccessTokenDto(userId, service);
+    private OAuthTokenResponseDto getTokenDtoOrThrow(StreamingPlatform service) {
+        OAuthTokenResponseDto tokenDto = tokenService.getValidAccessTokenDto(service);
         if (tokenDto == null)
-            throw new IllegalStateException("No valid token for " + service + " for user " + userId);
+            throw new IllegalStateException("No valid token for " + service + " for current user ");
         return tokenDto;
     }
 
-    public List<Playlist> getUsersPlaylists(StreamingPlatform service, Long userId) {
+    public List<Playlist> getUsersPlaylists(StreamingPlatform service) {
         IMusicService svc = resolveService(service);
-        String token = getTokenDtoOrThrow(userId, service).accessToken();
-        return svc.getUsersPlaylists(userId, token);
+        String token = getTokenDtoOrThrow(service).accessToken();
+        return svc.getUsersPlaylists(token);
     }
 
-    public List<Music> getPlaylistTracks(StreamingPlatform service, Long playlistId, Long userId) {
+    public List<Music> getPlaylistTracks(StreamingPlatform service, Long playlistId) {
         IMusicService svc = resolveService(service);
-        String token = getTokenDtoOrThrow(userId, service).accessToken();
+        String token = getTokenDtoOrThrow(service).accessToken();
         return svc.getPlaylistsTracks(playlistId, token);
     }
 
-    public Playlist createPlaylist(StreamingPlatform service, Long userId, String playlistName,
+    public Playlist createPlaylist(StreamingPlatform service, String playlistName,
             java.util.List<String> trackIds) {
         IMusicService svc = resolveService(service);
-        String token = getTokenDtoOrThrow(userId, service).accessToken();
-        return svc.createPlaylist(userId, token, playlistName, trackIds);
+        String token = getTokenDtoOrThrow(service).accessToken();
+        return svc.createPlaylist(token, playlistName, trackIds);
     }
 }
