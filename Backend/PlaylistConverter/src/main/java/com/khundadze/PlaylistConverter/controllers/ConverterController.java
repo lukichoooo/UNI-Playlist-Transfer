@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.khundadze.PlaylistConverter.dtos.ConvertPlaylistRequest;
+import com.khundadze.PlaylistConverter.dtos.ListPlaylistsRequest;
 import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 import com.khundadze.PlaylistConverter.models.Playlist;
 import com.khundadze.PlaylistConverter.services.OAuthTokenService;
@@ -19,29 +21,24 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/converter")
 @RequiredArgsConstructor
-public class ConverterController { // TODO: implement
+public class ConverterController {
 
     private final MusicServiceManager musicServiceManager;
     private final OAuthTokenService tokenService;
 
-    /**
-     * Create a playlist on the specified service.
-     */
     @PostMapping("/convert")
-    public ResponseEntity<Playlist> convertPlaylist(@RequestBody StreamingPlatform fromPlatform,
-            StreamingPlatform toPlatform, Long fromId,
-            Long toId) {
-        Playlist playlist = musicServiceManager.transferPlaylist(fromPlatform, toPlatform, fromId, toId);
+    public ResponseEntity<Playlist> convertPlaylist(@RequestBody ConvertPlaylistRequest request) {
+        Playlist playlist = musicServiceManager.transferPlaylist(
+                request.fromPlatform(),
+                request.toPlatform(),
+                request.fromPlaylistId(),
+                request.toPlaylistId());
         return ResponseEntity.ok(playlist);
     }
 
-    /**
-     * TODO: STORE PLAYLISTS IN CACHE
-     */
-    @GetMapping("/list")
-    public ResponseEntity<List<Playlist>> getPlaylists(@RequestBody StreamingPlatform service,
-            String accessToken) {
-        List<Playlist> playlists = musicServiceManager.getUsersPlaylists(service);
+    @PostMapping("/list")
+    public ResponseEntity<List<Playlist>> getPlaylists(@RequestBody ListPlaylistsRequest request) {
+        List<Playlist> playlists = musicServiceManager.getUsersPlaylists(request.platform());
         return ResponseEntity.ok(playlists);
     }
 
@@ -50,5 +47,4 @@ public class ConverterController { // TODO: implement
         List<StreamingPlatform> platforms = tokenService.getAuthenticatedPlatforms();
         return ResponseEntity.ok(platforms);
     }
-
 }

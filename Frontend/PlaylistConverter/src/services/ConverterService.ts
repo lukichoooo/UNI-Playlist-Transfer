@@ -2,9 +2,17 @@ import axios from "axios";
 import { authService } from "./authService";
 import { openOAuthPopup } from "./oauthHelper";
 
-export type StreamingPlatform = "SPOTIFY" | "YOUTUBE" | "SOUNDCLOUD" | "DEEZER" | "APPLEMUSIC" | "YOUTUBEMUSIC";
+export type StreamingPlatform =
+    | "SPOTIFY"
+    | "YOUTUBE"
+    | "SOUNDCLOUD"
+    | "DEEZER"
+    | "APPLEMUSIC"
+    | "YOUTUBEMUSIC";
 
 const BASE_URL = "http://localhost:8080/api/converter";
+const PLATFORM_AUTH_URL = "http://localhost:8080/api/platformAuth/connect";
+
 
 class ConverterService
 {
@@ -18,24 +26,9 @@ class ConverterService
     {
         try
         {
-            let authUrl = "";
-            switch (platform)
-            {
-                case "YOUTUBE":
-                    authUrl = "http://localhost:8080/oauth2/authorization/youtube";
-                    break;
-                case "YOUTUBEMUSIC":
-                    authUrl = "http://localhost:8080/oauth2/authorization/youtube";
-                    break;
-                case "SPOTIFY":
-                    authUrl = "http://localhost:8080/oauth2/authorization/spotify";
-                    break;
-                case "SOUNDCLOUD":
-                    authUrl = "http://localhost:8080/oauth2/authorization/soundcloud";
-                    break;
-                default:
-                    throw new Error(`No OAuth URL configured for ${platform}`);
-            }
+            // Convert platform to lowercase for URL path
+            const platformPath = platform.toLowerCase();
+            const authUrl = `http://localhost:8080/api/platformAuth/connect/${platformPath}`;
 
             await openOAuthPopup(authUrl);
             // Backend now has the tokens associated with the logged-in user
@@ -44,6 +37,7 @@ class ConverterService
             console.error(`OAuth login failed for ${platform}:`, err);
         }
     };
+
 
     getAuthenticatedServices = async (): Promise<StreamingPlatform[]> =>
     {

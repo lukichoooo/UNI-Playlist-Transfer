@@ -15,9 +15,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.khundadze.PlaylistConverter.authenticationMVC.AuthService;
-import com.khundadze.PlaylistConverter.securityConfig.oauth2ForPlatformAuth.OAuth2DispatcherSuccessHandler;
-
 import lombok.RequiredArgsConstructor;
 
 @Configuration
@@ -27,7 +24,7 @@ public class SecurityConfig {
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http,
                         AuthenticationFilter authenticationFilter,
-                        OAuth2DispatcherSuccessHandler oAuth2DispatcherSuccessHandler)
+                        OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler)
                         throws Exception {
                 http
                                 .cors().and()
@@ -42,13 +39,13 @@ public class SecurityConfig {
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                                 .requestMatchers("/home", "/error", "/api/auth/**").permitAll()
-                                                .requestMatchers("/login/oauth2/**").permitAll()
+                                                .requestMatchers("/api/platformAuth/**").permitAll() // <-- add this
                                                 .anyRequest().authenticated())
                                 // OAuth2 login (used for Google/GitHub) AND streaming OAuth
                                 .oauth2Login(oauth2 -> oauth2
-                                                .successHandler(oAuth2DispatcherSuccessHandler)) // let another class
-                                                                                                 // handle different
-                                                                                                 // auth methods
+                                                .successHandler(oAuth2LoginSuccessHandler)) // let another class
+                                                                                            // handle different
+                                                                                            // auth methods
 
                                 // Logout
                                 .logout(logout -> logout

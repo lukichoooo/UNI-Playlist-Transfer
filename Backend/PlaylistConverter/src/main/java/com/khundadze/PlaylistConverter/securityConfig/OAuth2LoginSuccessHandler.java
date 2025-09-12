@@ -1,4 +1,4 @@
-package com.khundadze.PlaylistConverter.securityConfig.oauth2ForPlatformAuth;
+package com.khundadze.PlaylistConverter.securityConfig;
 
 import java.io.IOException;
 import java.util.Map;
