@@ -1,11 +1,10 @@
 package com.khundadze.PlaylistConverter.services;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import com.khundadze.PlaylistConverter.models_db.User;
-import com.khundadze.PlaylistConverter.repo.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,7 +12,9 @@ import com.khundadze.PlaylistConverter.dtos.OAuthTokenResponseDto;
 import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 import com.khundadze.PlaylistConverter.models_db.OAuthToken;
 import com.khundadze.PlaylistConverter.models_db.OAuthTokenId;
+import com.khundadze.PlaylistConverter.models_db.User;
 import com.khundadze.PlaylistConverter.repo.OAuthTokenRepository;
+import com.khundadze.PlaylistConverter.repo.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,15 +23,15 @@ import lombok.RequiredArgsConstructor;
 public class OAuthTokenService {
 
     private final OAuthTokenRepository tokenRepository;
+    private final UserRepository userRepository;
     private final OAuthTokenMapper mapper;
 
     private final CurrentUserProvider userProvider;
-    private final UserRepository userRepository;
 
     @Transactional
     public OAuthTokenResponseDto save(StreamingPlatform service, String accessToken, String refreshToken,
                                       Instant expiry) {
-        Long userId = userProvider.getId(); // This line causes the error in the callback
+        Long userId = userProvider.getId();
         return saveForUser(userId, service, accessToken, refreshToken, expiry);
     }
 
@@ -39,11 +40,10 @@ public class OAuthTokenService {
                                              Instant expiry) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         Optional<OAuthToken> existing = tokenRepository.findByIdUserIdAndIdPlatform(userId, service);
         OAuthToken token;
-
         if (existing.isPresent()) {
             token = existing.get();
             token.setAccessToken(accessToken);
@@ -61,6 +61,7 @@ public class OAuthTokenService {
         }
         return mapper.toOAuthTokenResponseDto(tokenRepository.save(token));
     }
+
 
     @Transactional(readOnly = true)
     public OAuthTokenResponseDto getValidAccessTokenDto(StreamingPlatform service) {
@@ -88,6 +89,9 @@ public class OAuthTokenService {
 
     @Transactional(readOnly = true)
     public List<StreamingPlatform> getAuthenticatedPlatforms() {
+        if (!userProvider.isLoggedIn()) {
+            return Collections.emptyList(); // TODO: return from cache
+        }
         Long userId = userProvider.getId();
 
         return tokenRepository.findAllByUser_Id(userId).stream()
