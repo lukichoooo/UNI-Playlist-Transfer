@@ -1,21 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ServiceSelectionStep from "./ServiceSelectionStep";
 import PlaylistDetailsStep from "./PlaylistDetailsStep";
 import "./ServiceSelectorMenu.css";
-import { converterService, type StreamingPlatform } from "../../services/ConverterService";
-
-type ServiceSelectorMenuProps = {
-    authenticatedServices: string[];
-};
+import { converterService } from "../../services/ConverterService";
 
 const MAX_STEP = 2;
 
-export default function ServiceSelectorMenu({ authenticatedServices }: ServiceSelectorMenuProps)
+export default function ServiceSelectorMenu()
 {
     const [fromService, setFromService] = useState<string | null>(null);
     const [toService, setToService] = useState<string | null>(null);
     const [currentStep, setCurrentStep] = useState<number>(1);
-    const [authenticated, setAuthenticated] = useState<string[]>(authenticatedServices);
+    const [authenticated, setAuthenticated] = useState<string[]>([]);
+
+    useEffect(() =>
+    {
+        refreshAuthenticatedServices();
+    }, []);
 
     const goToNextStep = () =>
     {
@@ -39,29 +40,13 @@ export default function ServiceSelectorMenu({ authenticatedServices }: ServiceSe
         }
     };
 
-    const onAuthenticate = async (platform: string) =>
-    {
-        try
-        {
-            await converterService.oauthLogin(platform as StreamingPlatform);
-            // After successful OAuth login, refresh authenticated services from backend
-            const updated = await converterService.getAuthenticatedServices();
-            setAuthenticated(updated.map(p => p.toUpperCase())); // make sure strings match
-            console.log(`Successfully authenticated ${platform}`);
-        } catch (err)
-        {
-            console.error(`Authentication failed for ${platform}:`, err);
-        }
-    };
-
-
     return (
         <div className="menu-container">
             <h1 className="menu-title">Transfer Playlist</h1>
 
             {currentStep === 1 && (
                 <ServiceSelectionStep
-                    authenticatedServices={authenticatedServices}
+                    authenticatedServices={authenticated}
                     fromService={fromService}
                     toService={toService}
                     setFromService={setFromService}
@@ -75,7 +60,7 @@ export default function ServiceSelectorMenu({ authenticatedServices }: ServiceSe
                     fromService={fromService}
                     toService={toService}
                     authenticatedServices={authenticated}
-                    onAuthenticationSuccess={refreshAuthenticatedServices} //  refresh function
+                    onAuthenticationSuccess={refreshAuthenticatedServices}
                     onBack={goBack}
                 />
             )}

@@ -7,7 +7,7 @@ export default function HomePage()
         <div className={styles["page-container"]}>
             <h1>Home Page</h1>
             <hr />
-            <ServiceSelectorMenu authenticatedServices={[]} />
+            <ServiceSelectorMenu />
         </div>
     );
 }

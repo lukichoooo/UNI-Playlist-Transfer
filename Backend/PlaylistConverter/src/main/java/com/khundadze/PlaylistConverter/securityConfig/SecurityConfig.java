@@ -21,68 +21,68 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-        @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                        AuthenticationFilter authenticationFilter,
-                        OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler)
-                        throws Exception {
-                http
-                                .cors().and()
-                                // Add JWT filter
-                                .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                                // Disable CSRF for APIs
-                                .csrf().disable()
-                                // Stateless sessions
-                                .sessionManagement(session -> session
-                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                                // Authorization rules
-                                .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                                                .requestMatchers("/home", "/error", "/api/auth/**").permitAll()
-                                                .requestMatchers("/api/platformAuth/**").permitAll() // <-- add this
-                                                .anyRequest().authenticated())
-                                // OAuth2 login (used for Google/GitHub) AND streaming OAuth
-                                .oauth2Login(oauth2 -> oauth2
-                                                .successHandler(oAuth2LoginSuccessHandler)) // let another class
-                                                                                            // handle different
-                                                                                            // auth methods
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   AuthenticationFilter authenticationFilter,
+                                                   OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler)
+            throws Exception {
+        http
+                .cors().and()
+                // Add JWT filter
+                .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                // Disable CSRF for APIs
+                .csrf().disable()
+                // Stateless sessions
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // Authorization rules
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/home", "/error", "/api/auth/**").permitAll()
+                        .requestMatchers("/api/platformAuth/**").permitAll()
+                        .anyRequest().authenticated())
+                // OAuth2 login (used for Google/GitHub) AND streaming OAuth
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(oAuth2LoginSuccessHandler)) // let another class
+                // handle different
+                // auth methods
 
-                                // Logout
-                                .logout(logout -> logout
-                                                .logoutUrl("/logout")
-                                                .logoutSuccessUrl("/home")
-                                                .permitAll());
+                // Logout
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/home")
+                        .permitAll());
 
-                return http.build();
-        }
+        return http.build();
+    }
 
-        @Bean
-        public WebMvcConfigurer corsConfigurer() {
-                return new WebMvcConfigurer() {
-                        @Override
-                        public void addCorsMappings(CorsRegistry registry) {
-                                registry.addMapping("/**")
-                                                .allowedOrigins("http://localhost:5173") // your frontend
-                                                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                                                .allowCredentials(true);
-                        }
-                };
-        }
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins("http://localhost:5173") // your frontend
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowCredentials(true);
+            }
+        };
+    }
 
-        @Bean
-        public AuthenticationFilter authenticationFilter(UserDetailsService userDetailsService,
-                        JwtService jwtService) {
-                return new AuthenticationFilter(userDetailsService, jwtService);
-        }
+    @Bean
+    public AuthenticationFilter authenticationFilter(UserDetailsService userDetailsService,
+                                                     JwtService jwtService) {
+        return new AuthenticationFilter(userDetailsService, jwtService);
+    }
 
-        @Bean
-        public PasswordEncoder passwordEncoder() {
-                return new BCryptPasswordEncoder();
-        }
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-        @Bean
-        public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
-                        throws Exception {
-                return authenticationConfiguration.getAuthenticationManager();
-        }
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
 }

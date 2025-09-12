@@ -1,3 +1,4 @@
+// src/services/ConverterService.ts
 import axios from "axios";
 import { authService } from "./authService";
 import { openOAuthPopup } from "./oauthHelper";
@@ -26,16 +27,24 @@ class ConverterService
     {
         try
         {
-            // Convert platform to lowercase for URL path
             const platformPath = platform.toLowerCase();
-            const authUrl = `${PLATFORM_AUTH_URL}/${platformPath}`; // Use the constant
+            let authUrl = `${PLATFORM_AUTH_URL}/${platformPath}`;
 
+            // If the user is logged in, append their JWT to the URL.
+            if (authService.isLoggedIn())
+            {
+                const token = authService.getToken();
+                if (token)
+                {
+                    authUrl += `?jwt_token=${token}`;
+                }
+            }
+
+            // The popup will now open the URL with or without the token.
             await openOAuthPopup(authUrl);
-            // The promise will resolve when the popup closes after success
         } catch (err)
         {
             console.error(`OAuth login failed for ${platform}:`, err);
-            // Re-throw the error so the calling component knows it failed
             throw err;
         }
     };
@@ -56,16 +65,29 @@ class ConverterService
         }
     };
 
-    authenticate = async (platform: StreamingPlatform): Promise<void> =>
+    transferPlaylist = async (
+        fromPlatform: StreamingPlatform,
+        toPlatform: StreamingPlatform,
+        fromPlaylistId: string,
+        toPlaylistId: string,
+        newPlaylistName: string
+    ): Promise<void> =>
     {
         try
         {
-            await axios.post(`${BASE_URL}/auth`, platform, {
+            await axios.post(`${BASE_URL}/convert`, {
+                fromPlatform,
+                toPlatform,
+                fromPlaylistId,
+                toPlaylistId,
+                newPlaylistName
+            }, {
                 headers: this.getAuthHeader(),
             });
         } catch (err)
         {
-            console.error(`Failed to authenticate ${platform}:`, err);
+            console.error("Failed to transfer playlist:", err);
+            throw err;
         }
     };
 }

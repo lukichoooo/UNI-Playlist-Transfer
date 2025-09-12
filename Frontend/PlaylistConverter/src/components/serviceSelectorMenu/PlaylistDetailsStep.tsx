@@ -2,7 +2,7 @@
 import { useState } from "react";
 import "./PlaylistDetailsStep.css";
 // Make sure to import converterService if it's not already
-import { converterService } from "../../services/ConverterService";
+import { converterService, type StreamingPlatform } from "../../services/ConverterService";
 
 type PlaylistDetailsStepProps = {
     fromService: string | null;
@@ -21,6 +21,8 @@ export default function PlaylistDetailsStep({
     onBack,
 }: PlaylistDetailsStepProps)
 {
+    const [fromPlaylistId, setFromPlaylistId] = useState("");
+    const [toPlaylistId, setToPlaylistId] = useState("");
     const [playlistName, setPlaylistName] = useState("");
 
     const isFromAuthenticated = fromService ? authenticatedServices.includes(fromService) : false;
@@ -28,8 +30,23 @@ export default function PlaylistDetailsStep({
 
     const handleCreate = async () =>
     {
-        if (!fromService || !toService || !isFromAuthenticated || !isToAuthenticated) return;
+        if (!fromService || !toService || !isFromAuthenticated || !isToAuthenticated || !fromPlaylistId) return;
 
+        try
+        {
+            await converterService.transferPlaylist(
+                fromService as StreamingPlatform,
+                toService as StreamingPlatform,
+                fromPlaylistId,
+                toPlaylistId, // This can be an empty string if not provided
+                playlistName
+            );
+            alert("Playlist transferred successfully!");
+        } catch (err)
+        {
+            console.error("Failed to transfer playlist:", err);
+            alert("Failed to transfer playlist. Please check the console for more details.");
+        }
     };
 
     const handleAuthenticate = async (platform: string) =>
@@ -83,6 +100,27 @@ export default function PlaylistDetailsStep({
             </div>
 
             {/* Input */}
+            <div className="input-group">
+                <label>From Playlist ID</label>
+                <input
+                    type="text"
+                    placeholder="Enter the source playlist ID"
+                    value={fromPlaylistId}
+                    onChange={(e) => setFromPlaylistId(e.target.value)}
+                    required
+                />
+            </div>
+
+            <div className="input-group">
+                <label>To Playlist ID (Optional)</label>
+                <input
+                    type="text"
+                    placeholder="Enter the destination playlist ID"
+                    value={toPlaylistId}
+                    onChange={(e) => setToPlaylistId(e.target.value)}
+                />
+            </div>
+
             <div className="input-group">
                 <label>New Playlist Name (Optional)</label>
                 <input

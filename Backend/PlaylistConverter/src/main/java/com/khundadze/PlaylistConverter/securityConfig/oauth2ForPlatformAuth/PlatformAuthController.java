@@ -1,11 +1,17 @@
 package com.khundadze.PlaylistConverter.securityConfig.oauth2ForPlatformAuth;
 
+import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
+import com.khundadze.PlaylistConverter.models_db.User;
+import com.khundadze.PlaylistConverter.securityConfig.JwtService;
+import com.khundadze.PlaylistConverter.services.OAuthTokenService;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -20,13 +26,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
-import com.khundadze.PlaylistConverter.services.CurrentUserProvider;
-import com.khundadze.PlaylistConverter.services.OAuthTokenService;
-
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
-
 @RestController
 @RequestMapping("/api/platformAuth")
 @RequiredArgsConstructor
@@ -34,16 +33,32 @@ public class PlatformAuthController {
 
     private final ClientRegistrationRepository clientRegistrationRepository;
     private final OAuthTokenService oauthTokenService;
-    private final CurrentUserProvider currentUserProvider;
+    private final JwtService jwtService;
+    private final UserDetailsService userDetailsService;
 
-    // Temporary in-memory store for unauthenticated users
+    private final Map<String, Long> stateToUserId = new ConcurrentHashMap<>();
     private final Map<String, OAuth2AccessTokenResponse> tempTokens = new ConcurrentHashMap<>();
 
     @GetMapping("/connect/youtube")
-    public void connectYoutube(HttpServletResponse response) throws IOException {
-        ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("youtube");
+    public void connectYoutube(
+            @RequestParam(value = "jwt_token", required = false) String token,
+            HttpServletResponse response) throws IOException {
 
-        String state = UUID.randomUUID().toString(); // CSRF/state mapping
+        ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("youtube");
+        String state = UUID.randomUUID().toString();
+
+        if (token != null && !token.isBlank()) {
+            try {
+                String username = jwtService.extractUsername(token);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                if (jwtService.isTokenValid(token, userDetails) && userDetails instanceof User) {
+                    User user = (User) userDetails;
+                    stateToUserId.put(state, user.getId());
+                }
+            } catch (Exception e) {
+                // Ignore invalid tokens and proceed as an anonymous user
+            }
+        }
 
         String authUri = UriComponentsBuilder
                 .fromUriString(registration.getProviderDetails().getAuthorizationUri())
@@ -61,8 +76,8 @@ public class PlatformAuthController {
 
     @GetMapping("/callback/youtube")
     public void youtubeCallback(@RequestParam("code") String code,
-            @RequestParam(value = "state", required = false) String state,
-            HttpServletResponse response) throws IOException {
+                                @RequestParam("state") String state,
+                                HttpServletResponse response) throws IOException {
 
         ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("youtube");
 
@@ -85,25 +100,24 @@ public class PlatformAuthController {
         OAuth2AccessTokenResponse tokenResponse = new DefaultAuthorizationCodeTokenResponseClient()
                 .getTokenResponse(grantRequest);
 
-        String tokenValue;
-        if (currentUserProvider.isLoggedIn()) {
-            // Save in DB
-            oauthTokenService.save(
+        Long userId = stateToUserId.remove(state);
+
+        if (userId != null) {
+            oauthTokenService.saveForUser(
+                    userId,
                     StreamingPlatform.YOUTUBE,
                     tokenResponse.getAccessToken().getTokenValue(),
                     tokenResponse.getRefreshToken() != null ? tokenResponse.getRefreshToken().getTokenValue() : null,
                     tokenResponse.getAccessToken().getExpiresAt());
-            tokenValue = tokenResponse.getAccessToken().getTokenValue();
         } else {
-            // Save temporarily in memory
-            tempTokens.put(state != null ? state : UUID.randomUUID().toString(), tokenResponse);
-            tokenValue = tokenResponse.getAccessToken().getTokenValue();
+            tempTokens.put(state, tokenResponse);
         }
+
         response.sendRedirect("http://localhost:5173/platform-auth-success");
     }
 
     @GetMapping("/tempToken")
     public OAuth2AccessTokenResponse getTempToken(@RequestParam String state) {
-        return tempTokens.get(state);
+        return tempTokens.remove(state);
     }
 }
