@@ -17,11 +17,21 @@ export function openOAuthPopup(url: string, width = 500, height = 600): Promise<
         const listener = (event: MessageEvent) =>
         {
             if (event.origin !== window.location.origin) return; // security
+
+            // This handles JWT login
             if (event.data?.token)
             {
                 window.removeEventListener("message", listener);
                 popup.close();
                 resolve(event.data.token);
+            }
+
+            // This handles platform auth success
+            if (event.data?.type === "auth-success")
+            {
+                window.removeEventListener("message", listener);
+                popup.close();
+                resolve("success"); // Resolve with a success message
             }
         };
 

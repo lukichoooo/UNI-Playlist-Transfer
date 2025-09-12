@@ -1,15 +1,16 @@
 import { Route, Routes } from 'react-router-dom'
-import HomePage from './pages/public/HomePage'
-import AboutPage from './pages/public/AboutPage'
-import Dashboard from './pages/private/Dashboard'
-import Settings from './pages/private/Settings'
-import Profile from './pages/private/Profile'
+import Footer from './components/Footer/Footer'
 import NavBarWrapper from './layouts/NavBarWrapper'
 import PrivatePageWrapper from './layouts/PrivatePageWrapper'
 import LoginPage from './pages/Auth/LoginPage'
-import RegisterPage from './pages/Auth/RegisterPage'
 import OAuthSuccessPage from './pages/Auth/OAuthSuccessPage'
-import Footer from './components/Footer/Footer'
+import RegisterPage from './pages/Auth/RegisterPage'
+import Dashboard from './pages/private/Dashboard'
+import Profile from './pages/private/Profile'
+import Settings from './pages/private/Settings'
+import AboutPage from './pages/public/AboutPage'
+import HomePage from './pages/public/HomePage'
+import PlatformAuthSuccessPage from './pages/Auth/PlatformAuthSuccessPage'
 
 export default function App()
 {
@@ -20,6 +21,7 @@ export default function App()
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/oauth-success" element={<OAuthSuccessPage />} />
+        <Route path="/platform-auth-success" element={<PlatformAuthSuccessPage />} /> {/* <-- Add new route */}
 
         {/* public */}
         <Route element={<NavBarWrapper />}>

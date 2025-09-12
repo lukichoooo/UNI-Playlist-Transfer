@@ -99,7 +99,7 @@ public class PlatformAuthController {
             tempTokens.put(state != null ? state : UUID.randomUUID().toString(), tokenResponse);
             tokenValue = tokenResponse.getAccessToken().getTokenValue();
         }
-
+        response.sendRedirect("http://localhost:5173/platform-auth-success");
     }
 
     @GetMapping("/tempToken")

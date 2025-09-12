@@ -28,13 +28,15 @@ class ConverterService
         {
             // Convert platform to lowercase for URL path
             const platformPath = platform.toLowerCase();
-            const authUrl = `http://localhost:8080/api/platformAuth/connect/${platformPath}`;
+            const authUrl = `${PLATFORM_AUTH_URL}/${platformPath}`; // Use the constant
 
             await openOAuthPopup(authUrl);
-            // Backend now has the tokens associated with the logged-in user
+            // The promise will resolve when the popup closes after success
         } catch (err)
         {
             console.error(`OAuth login failed for ${platform}:`, err);
+            // Re-throw the error so the calling component knows it failed
+            throw err;
         }
     };
 

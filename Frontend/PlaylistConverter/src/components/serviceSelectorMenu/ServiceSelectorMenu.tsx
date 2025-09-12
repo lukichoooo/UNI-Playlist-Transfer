@@ -27,6 +27,17 @@ export default function ServiceSelectorMenu({ authenticatedServices }: ServiceSe
         if (currentStep > 1) setCurrentStep(currentStep - 1);
     };
 
+    const refreshAuthenticatedServices = async () =>
+    {
+        try
+        {
+            const updatedServices = await converterService.getAuthenticatedServices();
+            setAuthenticated(updatedServices.map(p => p.toUpperCase()));
+        } catch (err)
+        {
+            console.error("Failed to refresh authenticated services:", err);
+        }
+    };
 
     const onAuthenticate = async (platform: string) =>
     {
@@ -64,7 +75,7 @@ export default function ServiceSelectorMenu({ authenticatedServices }: ServiceSe
                     fromService={fromService}
                     toService={toService}
                     authenticatedServices={authenticated}
-                    onAuthenticate={onAuthenticate}
+                    onAuthenticationSuccess={refreshAuthenticatedServices} //  refresh function
                     onBack={goBack}
                 />
             )}
