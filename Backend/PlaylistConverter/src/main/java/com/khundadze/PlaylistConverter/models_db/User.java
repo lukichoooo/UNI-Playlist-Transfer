@@ -34,7 +34,6 @@ public class User implements UserDetails {
     private Long id;
 
     private String username;
-    private String email;
     private String password;
 
     @OneToMany(mappedBy = "user")

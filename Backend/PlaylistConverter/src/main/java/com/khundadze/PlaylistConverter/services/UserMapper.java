@@ -13,7 +13,6 @@ public class UserMapper {
         return User.builder()
                 .id(userPrivateDto.id())
                 .username(userPrivateDto.username())
-                .email(userPrivateDto.email())
                 .password(userPrivateDto.password())
                 .build();
     }
@@ -30,6 +29,6 @@ public class UserMapper {
     }
 
     public UserPrivateDto toUserPrivateDto(User user) {
-        return new UserPrivateDto(user.getId(), user.getUsername(), user.getEmail(), user.getPassword());
+        return new UserPrivateDto(user.getId(), user.getUsername(), user.getPassword());
     }
 }

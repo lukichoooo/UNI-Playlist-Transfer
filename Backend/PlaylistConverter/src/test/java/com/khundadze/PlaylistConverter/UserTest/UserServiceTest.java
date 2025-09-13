@@ -35,10 +35,10 @@ class UserServiceTest {
 
     @Test
     void testSave() {
-        final UserPrivateDto dto = new UserPrivateDto(1L, "testUser", "email@test.com", "pass123");
-        final User user = User.builder().id(1L).username("testUser").email("email@test.com").password("pass123")
+        final UserPrivateDto dto = new UserPrivateDto(1L, "testUser", "pass123");
+        final User user = User.builder().id(1L).username("testUser").password("pass123")
                 .build();
-        final UserPrivateDto savedDto = new UserPrivateDto(1L, "testUser", "email@test.com", "pass123");
+        final UserPrivateDto savedDto = new UserPrivateDto(1L, "testUser", "pass123");
 
         when(mapper.toUser(dto)).thenReturn(user);
         when(repo.save(user)).thenReturn(user);
@@ -55,7 +55,7 @@ class UserServiceTest {
     void testFindById() {
         final Long id = 1L;
         final User user = User.builder().id(id).username("testUser").build();
-        final UserPrivateDto dto = new UserPrivateDto(id, "testUser", null, null);
+        final UserPrivateDto dto = new UserPrivateDto(id, "testUser", null);
 
         when(repo.findById(id)).thenReturn(Optional.of(user));
         when(mapper.toUserPrivateDto(user)).thenReturn(dto);

@@ -41,7 +41,7 @@ class UserControllerTest {
     @Test
     void testGetUserById() throws Exception {
         Long id = 1L;
-        UserPrivateDto dto = new UserPrivateDto(id, "testUser", "email@test.com", "pass123");
+        UserPrivateDto dto = new UserPrivateDto(id, "testUser", "pass123");
 
         when(service.findById(id)).thenReturn(dto);
 

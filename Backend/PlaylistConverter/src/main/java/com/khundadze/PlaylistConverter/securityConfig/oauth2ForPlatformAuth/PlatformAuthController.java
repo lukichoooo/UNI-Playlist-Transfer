@@ -122,8 +122,7 @@ public class PlatformAuthController {
         Long userId = stateToUserId.remove(state);
 
         if (userId != null) {
-            oauthTokenService.saveForUser(
-                    userId,
+            oauthTokenService.save(
                     StreamingPlatform.YOUTUBE,
                     tokenResponse.getAccessToken().getTokenValue(),
                     tokenResponse.getRefreshToken() != null ? tokenResponse.getRefreshToken().getTokenValue() : null,
