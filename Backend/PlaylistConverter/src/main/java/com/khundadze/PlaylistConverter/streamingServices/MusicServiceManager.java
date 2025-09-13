@@ -1,17 +1,15 @@
 package com.khundadze.PlaylistConverter.streamingServices;
 
-import java.util.List;
-
-import org.springframework.stereotype.Component;
-
 import com.khundadze.PlaylistConverter.dtos.OAuthTokenResponseDto;
 import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 import com.khundadze.PlaylistConverter.exceptions.UserNotAuthorizedForStreamingPlatformException;
 import com.khundadze.PlaylistConverter.models.Music;
 import com.khundadze.PlaylistConverter.models.Playlist;
 import com.khundadze.PlaylistConverter.services.OAuthTokenService;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -34,7 +32,7 @@ public class MusicServiceManager {
         return svc.getUsersPlaylists(token);
     }
 
-    public List<Music> getPlaylistTracks(StreamingPlatform platform, Long playlistId) {
+    public List<Music> getPlaylistTracks(StreamingPlatform platform, String playlistId) {
         IMusicService svc = registry.getService(platform);
         String token = getTokenOrThrow(platform).accessToken();
         return svc.getPlaylistsTracks(token, playlistId);
@@ -47,8 +45,7 @@ public class MusicServiceManager {
     }
 
     // TODO: main method of the whole app
-    public Playlist transferPlaylist(StreamingPlatform fromPlatform, StreamingPlatform toPlatform, Long fromId,
-            Long toId) {
+    public Playlist transferPlaylist(StreamingPlatform fromPlatform, StreamingPlatform toPlatform, String fromId, String toId) {
 
         IMusicService svcFrom = registry.getService(fromPlatform);
         String fromToken = getTokenOrThrow(fromPlatform).accessToken();

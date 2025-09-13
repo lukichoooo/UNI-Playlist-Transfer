@@ -102,7 +102,7 @@ export default function PlaylistDetailsStep({
             </div>
 
             {/* Input */}
-            <div className="input-group">
+            <div className="input-group"> {/* TODO: show menu where user can select playlist from their account instead of entering ID manually */}
                 <label>From Playlist ID</label>
                 <input
                     type="text"

@@ -1,10 +1,9 @@
 package com.khundadze.PlaylistConverter.streamingServices.clientSpecificService;
 
-import org.springframework.stereotype.Service;
-
 import com.khundadze.PlaylistConverter.models.Music;
 import com.khundadze.PlaylistConverter.models.Playlist;
 import com.khundadze.PlaylistConverter.streamingServices.IMusicService;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -18,7 +17,7 @@ public class DeezerService implements IMusicService {
     }
 
     @Override
-    public List<Music> getPlaylistsTracks(String accessToken, Long playlistId) {
+    public List<Music> getPlaylistsTracks(String accessToken, String playlistId) {
         // TODO: implement Deezer API call
         return null;
     }

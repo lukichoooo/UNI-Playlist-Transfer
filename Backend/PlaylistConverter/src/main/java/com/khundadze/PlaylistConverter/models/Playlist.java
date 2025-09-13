@@ -1,18 +1,19 @@
 package com.khundadze.PlaylistConverter.models;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
-
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @Builder
+@AllArgsConstructor
 public class Playlist {
 
-    private Long id; // id on the platform
+    private String id; // id on the platform
     private Long userId; // owner
     private String name;
 

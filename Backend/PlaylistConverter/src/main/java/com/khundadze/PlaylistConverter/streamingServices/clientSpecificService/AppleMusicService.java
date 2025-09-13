@@ -1,10 +1,9 @@
 package com.khundadze.PlaylistConverter.streamingServices.clientSpecificService;
 
-import org.springframework.stereotype.Service;
-
 import com.khundadze.PlaylistConverter.models.Music;
 import com.khundadze.PlaylistConverter.models.Playlist;
 import com.khundadze.PlaylistConverter.streamingServices.IMusicService;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -18,7 +17,7 @@ public class AppleMusicService implements IMusicService {
     }
 
     @Override
-    public List<Music> getPlaylistsTracks(String accessToken, Long playlistId) {
+    public List<Music> getPlaylistsTracks(String accessToken, String playlistId) {
         // TODO: implement Apple Music API call
         return null;
     }

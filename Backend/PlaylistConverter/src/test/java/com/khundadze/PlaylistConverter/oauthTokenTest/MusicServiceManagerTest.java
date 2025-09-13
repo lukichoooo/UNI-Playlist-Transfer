@@ -1,18 +1,5 @@
 package com.khundadze.PlaylistConverter.oauthTokenTest;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.List;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 import com.khundadze.PlaylistConverter.dtos.OAuthTokenResponseDto;
 import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 import com.khundadze.PlaylistConverter.exceptions.UserNotAuthorizedForStreamingPlatformException;
@@ -22,6 +9,18 @@ import com.khundadze.PlaylistConverter.services.OAuthTokenService;
 import com.khundadze.PlaylistConverter.streamingServices.IMusicService;
 import com.khundadze.PlaylistConverter.streamingServices.MusicServiceManager;
 import com.khundadze.PlaylistConverter.streamingServices.StreamingPlatformRegistry;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class MusicServiceManagerTest {
 
@@ -77,14 +76,14 @@ class MusicServiceManagerTest {
 
         when(tokenService.getValidAccessTokenDto(platform)).thenReturn(tokenDto);
         when(registry.getService(platform)).thenReturn(spotifyService);
-        when(spotifyService.getPlaylistsTracks("token123", 42L)).thenReturn(List.of(track));
+        when(spotifyService.getPlaylistsTracks("token123", "42L")).thenReturn(List.of(track));
 
-        List<Music> result = manager.getPlaylistTracks(platform, 42L);
+        List<Music> result = manager.getPlaylistTracks(platform, "42L");
 
         assertEquals(1, result.size());
         assertEquals("Song 1", result.get(0).getName());
         verify(tokenService).getValidAccessTokenDto(platform);
-        verify(spotifyService).getPlaylistsTracks("token123", 42L);
+        verify(spotifyService).getPlaylistsTracks("token123", "42L");
     }
 
     @Test
