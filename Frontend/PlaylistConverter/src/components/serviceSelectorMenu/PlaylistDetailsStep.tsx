@@ -55,8 +55,10 @@ export default function PlaylistDetailsStep({
         try
         {
             await converterService.oauthLogin(platform as any);
-            // When the above promise resolves, the auth is done.
-            // Now, call the function passed from the parent to refresh the data.
+
+            // TODO: implement redis and store tokens there
+
+            // After successful authentication, notify the parent to refresh authenticated services
             onAuthenticationSuccess();
             console.log(`Successfully authenticated ${platform}`);
         } catch (err)

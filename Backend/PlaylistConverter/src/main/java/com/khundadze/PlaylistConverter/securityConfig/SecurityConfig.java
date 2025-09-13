@@ -1,5 +1,6 @@
 package com.khundadze.PlaylistConverter.securityConfig;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -14,8 +15,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import lombok.RequiredArgsConstructor;
 
 @Configuration
 @RequiredArgsConstructor
@@ -40,6 +39,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/home", "/error", "/api/auth/**").permitAll()
                         .requestMatchers("/api/platformAuth/**").permitAll()
+                        .requestMatchers("/api/converter/**").permitAll() // any user can transfer playlist :3
                         .anyRequest().authenticated())
                 // OAuth2 login (used for Google/GitHub) AND streaming OAuth
                 .oauth2Login(oauth2 -> oauth2
@@ -55,6 +55,7 @@ public class SecurityConfig {
 
         return http.build();
     }
+
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {
@@ -85,4 +86,6 @@ public class SecurityConfig {
             throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
+
+
 }

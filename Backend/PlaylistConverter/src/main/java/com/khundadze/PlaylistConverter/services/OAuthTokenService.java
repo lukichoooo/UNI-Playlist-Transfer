@@ -1,22 +1,21 @@
 package com.khundadze.PlaylistConverter.services;
 
-import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.khundadze.PlaylistConverter.dtos.OAuthTokenResponseDto;
 import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
+import com.khundadze.PlaylistConverter.exceptions.UserNotFoundException;
 import com.khundadze.PlaylistConverter.models_db.OAuthToken;
 import com.khundadze.PlaylistConverter.models_db.OAuthTokenId;
 import com.khundadze.PlaylistConverter.models_db.User;
 import com.khundadze.PlaylistConverter.repo.OAuthTokenRepository;
 import com.khundadze.PlaylistConverter.repo.UserRepository;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,22 +27,17 @@ public class OAuthTokenService {
 
     private final CurrentUserProvider userProvider;
 
-    @Transactional
-    public OAuthTokenResponseDto save(StreamingPlatform service, String accessToken, String refreshToken,
-                                      Instant expiry) {
-        Long userId = userProvider.getId();
-        return saveForUser(userId, service, accessToken, refreshToken, expiry);
-    }
 
     @Transactional
-    public OAuthTokenResponseDto saveForUser(Long userId, StreamingPlatform service, String accessToken, String refreshToken,
-                                             Instant expiry) {
+    public OAuthTokenResponseDto save(Long userId, StreamingPlatform service, String accessToken, String refreshToken,
+                                      Instant expiry) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
 
         Optional<OAuthToken> existing = tokenRepository.findByIdUserIdAndIdPlatform(userId, service);
         OAuthToken token;
+
         if (existing.isPresent()) {
             token = existing.get();
             token.setAccessToken(accessToken);
