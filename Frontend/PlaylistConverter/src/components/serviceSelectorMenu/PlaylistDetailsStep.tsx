@@ -1,5 +1,5 @@
 // lukichoooo/music-playlist-converter/Music-Playlist-Converter-d0f2106ac07b1d284c8474589fcb1eed50f23c54/Frontend/PlaylistConverter/src/components/serviceSelectorMenu/PlaylistDetailsStep.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./PlaylistDetailsStep.css";
 import { converterService, type StreamingPlatform } from "../../services/ConverterService";
 import { PlaylistDropdown } from "./PlaylistDropdown";
@@ -32,6 +32,20 @@ export default function PlaylistDetailsStep({
 
     const isFromAuthenticated = fromService ? authenticatedServices.includes(fromService) : false;
     const isToAuthenticated = toService ? authenticatedServices.includes(toService) : false;
+
+    useEffect(() =>
+    {
+        const fetchPlaylists = async () =>
+        {
+            if (fromService && isFromAuthenticated)
+            {
+                const playlists = await converterService.getPlaylists(fromService as StreamingPlatform);
+                setSortedFromPlaylists(playlists);
+            }
+        };
+        fetchPlaylists();
+    }, [fromService, isFromAuthenticated]);
+
 
     const handleCreate = async () =>
     {

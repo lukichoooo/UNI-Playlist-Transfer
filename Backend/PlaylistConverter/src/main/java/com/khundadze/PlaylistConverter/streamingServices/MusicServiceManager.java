@@ -51,24 +51,40 @@ public class MusicServiceManager {
     }
 
     // TODO: main method of the whole app
-    public Playlist transferPlaylist(StreamingPlatform fromPlatform, StreamingPlatform toPlatform, String fromPlaylistId, String newPlaylistName) {
+    public Playlist transferPlaylist(
+            StreamingPlatform fromPlatform,
+            StreamingPlatform toPlatform,
+            String fromPlaylistId,
+            String newPlaylistName) {
 
+        // Source service and token
         IMusicService svcFrom = registry.getService(fromPlatform);
         String fromToken = getTokenOrThrow(fromPlatform).accessToken();
 
+        // Target service and token
         IMusicService svcTo = registry.getService(toPlatform);
         String toToken = getTokenOrThrow(toPlatform).accessToken();
 
+        // Fetch tracks from source
         List<Music> tracks = svcFrom.getPlaylistsTracks(fromToken, fromPlaylistId);
+        for (Music track : tracks) {
+            System.out.println(track.getName() + " - " + track.getId());
+        }
 
-        // TODO: transfer playlist
+        // Extract track IDs
+        List<String> trackIds = tracks.stream()
+                .map(Music::getId)
+                .toList();
 
-        Playlist playlist = svcTo.createPlaylist(toToken, toToken, null);
+        // Default playlist name if not provided
         if (newPlaylistName == null || newPlaylistName.isEmpty()) {
             newPlaylistName = "Playlist From " + fromPlatform.name();
         }
-        playlist.setName(newPlaylistName);
 
-        return null;
+        // Create playlist on target platform
+        Playlist playlist = svcTo.createPlaylist(toToken, newPlaylistName, trackIds);
+
+        return playlist;
     }
+
 }
