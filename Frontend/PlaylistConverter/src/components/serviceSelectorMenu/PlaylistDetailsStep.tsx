@@ -23,12 +23,9 @@ export default function PlaylistDetailsStep({
     onBack,
 }: PlaylistDetailsStepProps)
 {
-    const [selectedPlaylist, setSelectedPlaylist] = useState<PlaylistSearchDto>(null as any);
+    const [selectedPlaylist, setSelectedPlaylist] = useState<PlaylistSearchDto | null>(null as any);
     const [playlistModalOpen, setPlaylistModalOpen] = useState(false);
-    const [sortedFromPlaylists, setSortedFromPlaylists] = useState<PlaylistSearchDto[]>(
-        [{ id: "1", name: "My Playlist 1", totalTracks: 10 },
-        { id: "2", name: "My Playlist 2", totalTracks: 20 }]
-    ); // Placeholder data
+    const [sortedFromPlaylists, setSortedFromPlaylists] = useState<PlaylistSearchDto[]>([]); // Placeholder data
     // TODO: fetch playlists based on fromService when it changes
 
     const [playlistName, setPlaylistName] = useState("");
@@ -43,7 +40,7 @@ export default function PlaylistDetailsStep({
         await converterService.transferPlaylist(
             fromService as StreamingPlatform,
             toService as StreamingPlatform,
-            selectedPlaylist,
+            selectedPlaylist.id,
             playlistName
         );
         alert("Playlist transferred successfully!");

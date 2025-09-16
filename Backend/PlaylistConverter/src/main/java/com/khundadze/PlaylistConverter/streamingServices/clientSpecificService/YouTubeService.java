@@ -26,7 +26,13 @@ public class YouTubeService implements IMusicService { // TODO:
         logger.info("Fetching user playlists from YouTube with accessToken");
         RestTemplate restTemplate = new RestTemplate();
 
-        String url = UriComponentsBuilder.fromHttpUrl("https://www.googleapis.com/youtube/v3/playlists").queryParam("part", "snippet").queryParam("mine", "true").build().toUriString();
+        // YouTube API URL
+        String url = UriComponentsBuilder
+                .fromHttpUrl("https://www.googleapis.com/youtube/v3/playlists")
+                .queryParam("part", "snippet,contentDetails")
+                .queryParam("mine", "true")
+                .queryParam("maxResults", 50) // optional, max per page
+                .build().toUriString();
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
@@ -36,22 +42,32 @@ public class YouTubeService implements IMusicService { // TODO:
 
         ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
 
-        List<Playlist> playlists = new ArrayList<>();
+        List<PlaylistSearchDto> playlists = new ArrayList<>();
         if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
             List<Map<String, Object>> items = (List<Map<String, Object>>) response.getBody().get("items");
             if (items != null) {
                 for (Map<String, Object> item : items) {
                     Map<String, Object> snippet = (Map<String, Object>) item.get("snippet");
-                    Playlist p = Playlist.builder()
-                            .id((String) item.get("id"))
-                            .name((String) snippet.get("title"))
-                            .streamingPlatform(StreamingPlatform.YOUTUBE)
-                            .build();
+                    Map<String, Object> contentDetails = (Map<String, Object>) item.get("contentDetails");
 
+                    int itemCount = 0;
+                    if (contentDetails != null && contentDetails.get("itemCount") != null) {
+                        itemCount = ((Number) contentDetails.get("itemCount")).intValue();
+                    }
+
+                    PlaylistSearchDto dto = new PlaylistSearchDto(
+                            (String) item.get("id"),
+                            (String) snippet.get("title"),
+                            itemCount
+                    );
+
+
+                    playlists.add(dto);
                 }
             }
         }
-        return null;
+
+        return playlists;
     }
 
 
