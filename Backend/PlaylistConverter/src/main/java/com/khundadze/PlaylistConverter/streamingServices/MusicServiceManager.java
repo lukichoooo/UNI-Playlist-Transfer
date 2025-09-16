@@ -64,6 +64,9 @@ public class MusicServiceManager {
         // TODO: transfer playlist
 
         Playlist playlist = svcTo.createPlaylist(toToken, toToken, null);
+        if (newPlaylistName == null || newPlaylistName.isEmpty()) {
+            newPlaylistName = "Playlist From " + fromPlatform.name();
+        }
         playlist.setName(newPlaylistName);
 
         return null;

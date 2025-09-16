@@ -60,7 +60,7 @@ export default function ServiceSelectorMenu()
                     fromService={fromService}
                     toService={toService}
                     authenticatedServices={authenticated}
-                    onAuthenticationSuccess={refreshAuthenticatedServices}
+                    refreshAuthenticatedServices={refreshAuthenticatedServices}
                     onBack={goBack}
                 />
             )}

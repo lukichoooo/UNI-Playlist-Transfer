@@ -2,6 +2,7 @@
 import axios from "axios";
 import { authService } from "./authService";
 import { openOAuthPopup } from "./oauthHelper";
+import type { PlaylistSearchDto } from "../types";
 
 export type StreamingPlatform =
     | "SPOTIFY"
@@ -64,6 +65,22 @@ class ConverterService
             return [];
         }
     };
+
+    getPlaylists = async (platform: StreamingPlatform): Promise<PlaylistSearchDto[]> =>
+    {
+        try
+        {
+            const response = await axios.get(`${BASE_URL}/playlists`, {
+                headers: this.getAuthHeader(),
+                params: { platform },
+            });
+            return response.data;
+        } catch (err)
+        {
+            console.error("Failed to fetch playlists:", err);
+            return [];
+        }
+    }
 
     transferPlaylist = async (
         fromPlatform: StreamingPlatform,

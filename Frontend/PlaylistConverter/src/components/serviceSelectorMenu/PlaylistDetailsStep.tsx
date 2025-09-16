@@ -10,7 +10,7 @@ type PlaylistDetailsStepProps = {
     fromService: string | null;
     toService: string | null;
     // This prop should now be a function to update the parent's state
-    onAuthenticationSuccess: () => void;
+    refreshAuthenticatedServices: () => void;
     authenticatedServices: string[];
     onBack: () => void;
 };
@@ -19,13 +19,16 @@ export default function PlaylistDetailsStep({
     fromService,
     toService,
     authenticatedServices,
-    onAuthenticationSuccess,
+    refreshAuthenticatedServices: onAuthenticationSuccess,
     onBack,
 }: PlaylistDetailsStepProps)
 {
-    const [selectedPlaylistId, setSelectedPlaylistId] = useState("");
+    const [selectedPlaylist, setSelectedPlaylist] = useState<PlaylistSearchDto>(null as any);
     const [playlistModalOpen, setPlaylistModalOpen] = useState(false);
-    const [sortedFromPlaylists, setSortedFromPlaylists] = useState<PlaylistSearchDto[]>([{ id: "1", name: "My Playlist 1", totalTracks: 10 }, { id: "2", name: "My Playlist 2", totalTracks: 20 }]); // Placeholder data
+    const [sortedFromPlaylists, setSortedFromPlaylists] = useState<PlaylistSearchDto[]>(
+        [{ id: "1", name: "My Playlist 1", totalTracks: 10 },
+        { id: "2", name: "My Playlist 2", totalTracks: 20 }]
+    ); // Placeholder data
     // TODO: fetch playlists based on fromService when it changes
 
     const [playlistName, setPlaylistName] = useState("");
@@ -35,40 +38,33 @@ export default function PlaylistDetailsStep({
 
     const handleCreate = async () =>
     {
-        if (!fromService || !toService || !isFromAuthenticated || !isToAuthenticated || !selectedPlaylistId) return;
+        if (!fromService || !toService || !isFromAuthenticated || !isToAuthenticated || !selectedPlaylist) return;
 
-        try
-        {
-            await converterService.transferPlaylist(
-                fromService as StreamingPlatform,
-                toService as StreamingPlatform,
-                selectedPlaylistId,
-                playlistName
-            );
-            alert("Playlist transferred successfully!");
-        } catch (err)
-        {
-            console.error("Failed to transfer playlist:", err);
-            alert("Failed to transfer playlist. Please check the console for more details.");
-        }
+        await converterService.transferPlaylist(
+            fromService as StreamingPlatform,
+            toService as StreamingPlatform,
+            selectedPlaylist,
+            playlistName
+        );
+        alert("Playlist transferred successfully!");
+
     };
 
     const handleAuthenticate = async (platform: string) =>
     {
         if (!platform) return;
-        try
-        {
-            await converterService.oauthLogin(platform as any);
 
-            // TODO: implement redis and store tokens there
+        await converterService.oauthLogin(platform as any);
 
-            // After successful authentication, notify the parent to refresh authenticated services
-            onAuthenticationSuccess();
-            console.log(`Successfully authenticated ${platform}`);
-        } catch (err)
-        {
-            console.error(`Authentication failed for ${platform}:`, err);
-        }
+        // TODO: implement redis and store tokens there
+
+        // After successful authentication, notify the parent to refresh authenticated services
+        onAuthenticationSuccess();
+
+        console.log(`Successfully authenticated ${platform}`);
+
+        const playlists = await converterService.getPlaylists(fromService as StreamingPlatform);
+        setSortedFromPlaylists(playlists);
     };
 
     return (
@@ -105,14 +101,22 @@ export default function PlaylistDetailsStep({
                 </div>
             </div>
 
-            <button className="choose-playlist-btn" onClick={() => setPlaylistModalOpen(true)}>Choose Playlist</button>
-
+            {/* Display selected playlist above the button */}
+            {selectedPlaylist && (
+                <p className="selected-playlist">
+                    Selected Playlist: <strong>{selectedPlaylist?.name}</strong> <br />
+                    <small>Total Tracks: {selectedPlaylist?.totalTracks}</small>
+                </p>
+            )}
+            {isFromAuthenticated &&
+                <button className="choose-playlist-btn" onClick={() => setPlaylistModalOpen(true)}>Choose Playlist</button>
+            }
             {/* Input */}
             <div className="input-group">
                 <PlaylistDropdown
                     fromPlaylists={sortedFromPlaylists}
-                    selectedPlaylistId={selectedPlaylistId}
-                    setSelectedPlaylistId={setSelectedPlaylistId}
+                    selectedPlaylist={selectedPlaylist}
+                    setSelectedPlaylist={setSelectedPlaylist}
                     isOpen={playlistModalOpen}
                     onClose={() => setPlaylistModalOpen(false)}
                 />
@@ -135,7 +139,7 @@ export default function PlaylistDetailsStep({
                     ← Go Back
                 </button>
 
-                {isFromAuthenticated && isToAuthenticated && (
+                {selectedPlaylist && isFromAuthenticated && isToAuthenticated && (
                     <button className="transfer-btn active" onClick={handleCreate}>
                         Create Playlist
                     </button>

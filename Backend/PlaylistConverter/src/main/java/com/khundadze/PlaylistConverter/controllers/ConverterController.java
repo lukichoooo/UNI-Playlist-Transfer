@@ -1,7 +1,6 @@
 package com.khundadze.PlaylistConverter.controllers;
 
 import com.khundadze.PlaylistConverter.dtos.ConvertPlaylistRequest;
-import com.khundadze.PlaylistConverter.dtos.ListPlaylistsRequest;
 import com.khundadze.PlaylistConverter.dtos.PlaylistSearchDto;
 import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 import com.khundadze.PlaylistConverter.models.Playlist;
@@ -31,11 +30,12 @@ public class ConverterController {
         return ResponseEntity.ok(playlist);
     }
 
-    @PostMapping("/list")
-    public ResponseEntity<List<PlaylistSearchDto>> getPlaylists(@RequestBody ListPlaylistsRequest request) {
-        List<PlaylistSearchDto> playlists = musicServiceManager.getUsersPlaylists(request.platform());
+    @GetMapping("/playlists")
+    public ResponseEntity<List<PlaylistSearchDto>> getPlaylists(@RequestParam StreamingPlatform platform) {
+        List<PlaylistSearchDto> playlists = musicServiceManager.getUsersPlaylists(platform);
         return ResponseEntity.ok(playlists);
     }
+
 
     @GetMapping("/authenticatedPlatforms")
     public ResponseEntity<List<StreamingPlatform>> getAuthenticatedPlatforms() {
