@@ -1,5 +1,6 @@
 package com.khundadze.PlaylistConverter.streamingServices.clientSpecificService;
 
+import com.khundadze.PlaylistConverter.dtos.PlaylistSearchDto;
 import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 import com.khundadze.PlaylistConverter.models.Music;
 import com.khundadze.PlaylistConverter.models.Playlist;
@@ -21,7 +22,7 @@ public class YouTubeService implements IMusicService { // TODO:
     private static final Logger logger = LoggerFactory.getLogger(YouTubeService.class);
 
     @Override
-    public List<Playlist> getUsersPlaylists(String accessToken) {
+    public List<PlaylistSearchDto> getUsersPlaylists(String accessToken) {
         logger.info("Fetching user playlists from YouTube with accessToken");
         RestTemplate restTemplate = new RestTemplate();
 
@@ -50,7 +51,7 @@ public class YouTubeService implements IMusicService { // TODO:
                 }
             }
         }
-        return playlists;
+        return null;
     }
 
 

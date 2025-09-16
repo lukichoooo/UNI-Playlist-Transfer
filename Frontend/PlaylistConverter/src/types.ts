@@ -23,3 +23,10 @@ export type RegisterRequest = {
 export type AuthResponse = {
     token: string; // JWT returned from backend
 }
+
+export type PlaylistSearchDto =
+    {
+        id: string;
+        name: string;
+        totalTracks: number;
+    }

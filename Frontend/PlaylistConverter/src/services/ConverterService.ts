@@ -69,7 +69,6 @@ class ConverterService
         fromPlatform: StreamingPlatform,
         toPlatform: StreamingPlatform,
         fromPlaylistId: string,
-        toPlaylistId: string,
         newPlaylistName: string
     ): Promise<void> =>
     {
@@ -79,7 +78,6 @@ class ConverterService
                 fromPlatform,
                 toPlatform,
                 fromPlaylistId,
-                toPlaylistId,
                 newPlaylistName
             }, {
                 headers: this.getAuthHeader(),

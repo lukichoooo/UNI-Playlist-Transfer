@@ -29,4 +29,8 @@ public class Playlist {
     public void removeMusic(Music music) {
         musics.remove(music);
     }
+
+    public int getMusicCount() {
+        return musics.size();
+    }
 }

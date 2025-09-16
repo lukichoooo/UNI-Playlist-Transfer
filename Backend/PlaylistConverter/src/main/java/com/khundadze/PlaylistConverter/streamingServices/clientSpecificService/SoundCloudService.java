@@ -1,5 +1,6 @@
 package com.khundadze.PlaylistConverter.streamingServices.clientSpecificService;
 
+import com.khundadze.PlaylistConverter.dtos.PlaylistSearchDto;
 import com.khundadze.PlaylistConverter.models.Music;
 import com.khundadze.PlaylistConverter.models.Playlist;
 import com.khundadze.PlaylistConverter.streamingServices.IMusicService;
@@ -11,7 +12,7 @@ import java.util.List;
 public class SoundCloudService implements IMusicService {
 
     @Override
-    public List<Playlist> getUsersPlaylists(String accessToken) {
+    public List<PlaylistSearchDto> getUsersPlaylists(String accessToken) {
         // TODO: implement SoundCloud API call
         return null;
     }

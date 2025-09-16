@@ -1,8 +1,10 @@
 // lukichoooo/music-playlist-converter/Music-Playlist-Converter-d0f2106ac07b1d284c8474589fcb1eed50f23c54/Frontend/PlaylistConverter/src/components/serviceSelectorMenu/PlaylistDetailsStep.tsx
 import { useState } from "react";
 import "./PlaylistDetailsStep.css";
-// Make sure to import converterService if it's not already
 import { converterService, type StreamingPlatform } from "../../services/ConverterService";
+import { PlaylistDropdown } from "./PlaylistDropdown";
+import type { PlaylistSearchDto } from "../../types";
+
 
 type PlaylistDetailsStepProps = {
     fromService: string | null;
@@ -21,8 +23,11 @@ export default function PlaylistDetailsStep({
     onBack,
 }: PlaylistDetailsStepProps)
 {
-    const [fromPlaylistId, setFromPlaylistId] = useState("");
-    const [toPlaylistId, setToPlaylistId] = useState("");
+    const [selectedPlaylistId, setSelectedPlaylistId] = useState("");
+    const [playlistModalOpen, setPlaylistModalOpen] = useState(false);
+    const [sortedFromPlaylists, setSortedFromPlaylists] = useState<PlaylistSearchDto[]>([{ id: "1", name: "My Playlist 1", totalTracks: 10 }, { id: "2", name: "My Playlist 2", totalTracks: 20 }]); // Placeholder data
+    // TODO: fetch playlists based on fromService when it changes
+
     const [playlistName, setPlaylistName] = useState("");
 
     const isFromAuthenticated = fromService ? authenticatedServices.includes(fromService) : false;
@@ -30,15 +35,14 @@ export default function PlaylistDetailsStep({
 
     const handleCreate = async () =>
     {
-        if (!fromService || !toService || !isFromAuthenticated || !isToAuthenticated || !fromPlaylistId) return;
+        if (!fromService || !toService || !isFromAuthenticated || !isToAuthenticated || !selectedPlaylistId) return;
 
         try
         {
             await converterService.transferPlaylist(
                 fromService as StreamingPlatform,
                 toService as StreamingPlatform,
-                fromPlaylistId,
-                toPlaylistId, // This can be an empty string if not provided
+                selectedPlaylistId,
                 playlistName
             );
             alert("Playlist transferred successfully!");
@@ -101,27 +105,19 @@ export default function PlaylistDetailsStep({
                 </div>
             </div>
 
+            <button className="choose-playlist-btn" onClick={() => setPlaylistModalOpen(true)}>Choose Playlist</button>
+
             {/* Input */}
-            <div className="input-group"> {/* TODO: show menu where user can select playlist from their account instead of entering ID manually */}
-                <label>From Playlist ID</label>
-                <input
-                    type="text"
-                    placeholder="Enter the source playlist ID"
-                    value={fromPlaylistId}
-                    onChange={(e) => setFromPlaylistId(e.target.value)}
-                    required
+            <div className="input-group">
+                <PlaylistDropdown
+                    fromPlaylists={sortedFromPlaylists}
+                    selectedPlaylistId={selectedPlaylistId}
+                    setSelectedPlaylistId={setSelectedPlaylistId}
+                    isOpen={playlistModalOpen}
+                    onClose={() => setPlaylistModalOpen(false)}
                 />
             </div>
 
-            <div className="input-group">
-                <label>To Playlist ID (Optional)</label>
-                <input
-                    type="text"
-                    placeholder="Enter the destination playlist ID"
-                    value={toPlaylistId}
-                    onChange={(e) => setToPlaylistId(e.target.value)}
-                />
-            </div>
 
             <div className="input-group">
                 <label>New Playlist Name (Optional)</label>

@@ -1,6 +1,7 @@
 package com.khundadze.PlaylistConverter.streamingServices;
 
 import com.khundadze.PlaylistConverter.dtos.OAuthTokenResponseDto;
+import com.khundadze.PlaylistConverter.dtos.PlaylistSearchDto;
 import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 import com.khundadze.PlaylistConverter.exceptions.UserNotAuthorizedForStreamingPlatformException;
 import com.khundadze.PlaylistConverter.models.Music;
@@ -9,6 +10,7 @@ import com.khundadze.PlaylistConverter.services.OAuthTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Component
@@ -26,11 +28,15 @@ public class MusicServiceManager {
         return tokenDto;
     }
 
-    public List<Playlist> getUsersPlaylists(StreamingPlatform platform) {
+    // ASC
+    public List<PlaylistSearchDto> getUsersPlaylists(StreamingPlatform platform) {
         IMusicService svc = registry.getService(platform);
         String token = getTokenOrThrow(platform).accessToken();
-        return svc.getUsersPlaylists(token);
+        return svc.getUsersPlaylists(token).stream()
+                .sorted(Comparator.comparing(PlaylistSearchDto::name, String.CASE_INSENSITIVE_ORDER))
+                .toList();
     }
+
 
     public List<Music> getPlaylistTracks(StreamingPlatform platform, String playlistId) {
         IMusicService svc = registry.getService(platform);
@@ -45,7 +51,7 @@ public class MusicServiceManager {
     }
 
     // TODO: main method of the whole app
-    public Playlist transferPlaylist(StreamingPlatform fromPlatform, StreamingPlatform toPlatform, String fromId, String toId) {
+    public Playlist transferPlaylist(StreamingPlatform fromPlatform, StreamingPlatform toPlatform, String fromPlaylistId, String newPlaylistName) {
 
         IMusicService svcFrom = registry.getService(fromPlatform);
         String fromToken = getTokenOrThrow(fromPlatform).accessToken();
@@ -53,11 +59,12 @@ public class MusicServiceManager {
         IMusicService svcTo = registry.getService(toPlatform);
         String toToken = getTokenOrThrow(toPlatform).accessToken();
 
-        List<Music> tracks = svcFrom.getPlaylistsTracks(fromToken, fromId);
+        List<Music> tracks = svcFrom.getPlaylistsTracks(fromToken, fromPlaylistId);
 
         // TODO: transfer playlist
 
         Playlist playlist = svcTo.createPlaylist(toToken, toToken, null);
+        playlist.setName(newPlaylistName);
 
         return null;
     }

@@ -6,6 +6,6 @@ public record ConvertPlaylistRequest(
         StreamingPlatform fromPlatform,
         StreamingPlatform toPlatform,
         String fromPlaylistId,
-        String toPlaylistId) {
+        String newPlaylistName) {
 
 }
