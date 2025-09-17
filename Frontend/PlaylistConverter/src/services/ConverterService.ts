@@ -3,6 +3,7 @@ import axios from "axios";
 import { authService } from "./authService";
 import { openOAuthPopup } from "./oauthHelper";
 import type { PlaylistSearchDto } from "../types";
+const VITE_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export type StreamingPlatform =
     | "SPOTIFY"
@@ -12,8 +13,8 @@ export type StreamingPlatform =
     | "APPLEMUSIC"
     | "YOUTUBEMUSIC";
 
-const BASE_URL = "http://localhost:8080/api/converter";
-const PLATFORM_AUTH_URL = "http://localhost:8080/api/platformAuth/connect";
+const BASE_URL = `${VITE_BASE_URL}/api/converter`;
+const PLATFORM_AUTH_URL = `${VITE_BASE_URL}/api/platformAuth/connect`;
 
 
 class ConverterService

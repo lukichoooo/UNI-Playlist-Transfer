@@ -3,6 +3,7 @@ import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 
 import { openOAuthPopup } from "./oauthHelper";
+const VITE_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 
 interface JwtPayload
@@ -11,7 +12,7 @@ interface JwtPayload
     [key: string]: any;
 }
 
-const BASE_URL = "http://localhost:8080/api/auth";
+const BASE_URL = `${VITE_BASE_URL}/api/auth`;
 
 class AuthService
 {
@@ -43,7 +44,7 @@ class AuthService
     {
         try
         {
-            const token = await openOAuthPopup("http://localhost:8080/oauth2/authorization/google");
+            const token = await openOAuthPopup(`${VITE_BASE_URL}/oauth2/authorization/google`);
             this.saveToken(token);
             window.location.href = "/dashboard";
         } catch (err)
@@ -56,7 +57,7 @@ class AuthService
     {
         try
         {
-            const token = await openOAuthPopup("http://localhost:8080/oauth2/authorization/github");
+            const token = await openOAuthPopup(`${VITE_BASE_URL}/oauth2/authorization/github`);
             this.saveToken(token);
             window.location.href = "/dashboard";
         } catch (err)

@@ -74,7 +74,7 @@ public class PlatformAuthController {
                 .queryParam("client_id", registration.getClientId())
                 .queryParam("response_type", "code")
                 .queryParam("scope", String.join(" ", registration.getScopes()))
-                .queryParam("redirect_uri", registration.getRedirectUri().replace("{baseUrl}", BASE_URL))
+                .queryParam("redirect_uri", registration.getRedirectUri().replace("${BASE_URL}", BASE_URL))
                 .queryParam("state", state)
                 .queryParam("access_type", "offline")
                 .build()
@@ -93,13 +93,13 @@ public class PlatformAuthController {
         OAuth2AuthorizationRequest authorizationRequest = OAuth2AuthorizationRequest.authorizationCode()
                 .authorizationUri(registration.getProviderDetails().getAuthorizationUri())
                 .clientId(registration.getClientId())
-                .redirectUri(registration.getRedirectUri().replace("{baseUrl}", BASE_URL))
+                .redirectUri(registration.getRedirectUri().replace("${BASE_URL}", BASE_URL))
                 .scopes(registration.getScopes())
                 .state(state)
                 .build();
 
         OAuth2AuthorizationResponse authorizationResponse = OAuth2AuthorizationResponse.success(code)
-                .redirectUri(registration.getRedirectUri().replace("{baseUrl}", BASE_URL))
+                .redirectUri(registration.getRedirectUri().replace("${BASE_URL}", BASE_URL))
                 .build();
 
         OAuth2AuthorizationCodeGrantRequest grantRequest = new OAuth2AuthorizationCodeGrantRequest(
@@ -149,7 +149,7 @@ public class PlatformAuthController {
                 .queryParam("client_id", registration.getClientId())
                 .queryParam("response_type", "code")
                 .queryParam("scope", String.join(" ", registration.getScopes()))
-                .queryParam("redirect_uri", registration.getRedirectUri().replace("{baseUrl}", BASE_URL))
+                .queryParam("redirect_uri", registration.getRedirectUri().replace("${BASE_URL}", BASE_URL))
                 .queryParam("state", state)
                 .queryParam("access_type", "offline")
                 .build()
@@ -168,13 +168,13 @@ public class PlatformAuthController {
         OAuth2AuthorizationRequest authorizationRequest = OAuth2AuthorizationRequest.authorizationCode()
                 .authorizationUri(registration.getProviderDetails().getAuthorizationUri())
                 .clientId(registration.getClientId())
-                .redirectUri(registration.getRedirectUri().replace("{baseUrl}", BASE_URL))
+                .redirectUri(registration.getRedirectUri().replace("${BASE_URL}", BASE_URL))
                 .scopes(registration.getScopes())
                 .state(state)
                 .build();
 
         OAuth2AuthorizationResponse authorizationResponse = OAuth2AuthorizationResponse.success(code)
-                .redirectUri(registration.getRedirectUri().replace("{baseUrl}", BASE_URL))
+                .redirectUri(registration.getRedirectUri().replace("${BASE_URL}", BASE_URL))
                 .build();
 
         OAuth2AuthorizationCodeGrantRequest grantRequest = new OAuth2AuthorizationCodeGrantRequest(
@@ -224,7 +224,7 @@ public class PlatformAuthController {
                 .queryParam("client_id", registration.getClientId())
                 .queryParam("response_type", "code")
                 .queryParam("scope", String.join(" ", registration.getScopes()))
-                .queryParam("redirect_uri", registration.getRedirectUri().replace("{baseUrl}", BASE_URL))
+                .queryParam("redirect_uri", registration.getRedirectUri().replace("${BASE_URL}", BASE_URL))
                 .queryParam("state", state)
                 .queryParam("show_dialog", "true") // optional: forces Spotify login screen
                 .build()
@@ -244,13 +244,13 @@ public class PlatformAuthController {
         OAuth2AuthorizationRequest authorizationRequest = OAuth2AuthorizationRequest.authorizationCode()
                 .authorizationUri(registration.getProviderDetails().getAuthorizationUri())
                 .clientId(registration.getClientId())
-                .redirectUri(registration.getRedirectUri().replace("{baseUrl}", BASE_URL))
+                .redirectUri(registration.getRedirectUri().replace("${BASE_URL}", BASE_URL))
                 .scopes(registration.getScopes())
                 .state(state)
                 .build();
 
         OAuth2AuthorizationResponse authorizationResponse = OAuth2AuthorizationResponse.success(code)
-                .redirectUri(registration.getRedirectUri().replace("{baseUrl}", BASE_URL))
+                .redirectUri(registration.getRedirectUri().replace("${BASE_URL}", BASE_URL))
                 .build();
 
         OAuth2AuthorizationCodeGrantRequest grantRequest = new OAuth2AuthorizationCodeGrantRequest(
