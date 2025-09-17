@@ -1,26 +1,28 @@
 package com.khundadze.PlaylistConverter.securityConfig;
 
-import java.io.IOException;
-import java.util.Map;
-
+import com.khundadze.PlaylistConverter.authenticationMVC.AuthService;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
-import com.khundadze.PlaylistConverter.authenticationMVC.AuthService;
+import java.io.IOException;
+import java.util.Map;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
+;
 
 @Component
 @RequiredArgsConstructor
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final AuthService authService; // your AuthService
-    private final String frontendUrl = "http://localhost:5173";
+    @Value("${FRONTEND_URL}")
+    private String FRONTEND_URL;
 
     @Override
     public void onAuthenticationSuccess(
@@ -29,7 +31,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             Authentication authentication) throws IOException, ServletException {
 
         if (!(authentication instanceof OAuth2AuthenticationToken)) {
-            response.sendRedirect(frontendUrl + "/login");
+            response.sendRedirect(FRONTEND_URL + "/login");
             return;
         }
 
@@ -43,7 +45,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         String token = authService.oauthLogin(username);
 
         // Redirect to frontend with token
-        response.sendRedirect(frontendUrl + "/oauth-success?token=" + token);
+        response.sendRedirect(FRONTEND_URL + "/oauth-success?token=" + token);
     }
 
     private String extractUsername(Map<String, Object> attributes) {

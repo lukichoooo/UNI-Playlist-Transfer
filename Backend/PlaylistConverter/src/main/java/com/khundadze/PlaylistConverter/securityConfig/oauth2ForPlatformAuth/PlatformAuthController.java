@@ -7,6 +7,7 @@ import com.khundadze.PlaylistConverter.securityConfig.JwtService;
 import com.khundadze.PlaylistConverter.services.OAuthTokenService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
@@ -34,6 +35,13 @@ public class PlatformAuthController {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
     private final StateManager stateManager;
+
+    @Value("${BASE_URL}")
+    private String BASE_URL;
+
+    @Value("${FRONTEND_URL}")
+    private String FRONTEND_URL;
+
 
     @GetMapping("/tempToken")
     public OAuthTokenResponseDto getTempToken(@RequestParam String state, @RequestParam String platform) {
@@ -66,7 +74,7 @@ public class PlatformAuthController {
                 .queryParam("client_id", registration.getClientId())
                 .queryParam("response_type", "code")
                 .queryParam("scope", String.join(" ", registration.getScopes()))
-                .queryParam("redirect_uri", registration.getRedirectUri().replace("{baseUrl}", "http://localhost:8080"))
+                .queryParam("redirect_uri", registration.getRedirectUri().replace("{baseUrl}", BASE_URL))
                 .queryParam("state", state)
                 .queryParam("access_type", "offline")
                 .build()
@@ -85,13 +93,13 @@ public class PlatformAuthController {
         OAuth2AuthorizationRequest authorizationRequest = OAuth2AuthorizationRequest.authorizationCode()
                 .authorizationUri(registration.getProviderDetails().getAuthorizationUri())
                 .clientId(registration.getClientId())
-                .redirectUri(registration.getRedirectUri().replace("{baseUrl}", "http://localhost:8080"))
+                .redirectUri(registration.getRedirectUri().replace("{baseUrl}", BASE_URL))
                 .scopes(registration.getScopes())
                 .state(state)
                 .build();
 
         OAuth2AuthorizationResponse authorizationResponse = OAuth2AuthorizationResponse.success(code)
-                .redirectUri(registration.getRedirectUri().replace("{baseUrl}", "http://localhost:8080"))
+                .redirectUri(registration.getRedirectUri().replace("{baseUrl}", BASE_URL))
                 .build();
 
         OAuth2AuthorizationCodeGrantRequest grantRequest = new OAuth2AuthorizationCodeGrantRequest(
@@ -114,7 +122,7 @@ public class PlatformAuthController {
             stateManager.putTempToken(state, tokenResponse);
         }
 
-        response.sendRedirect("http://localhost:5173/platform-auth-success");
+        response.sendRedirect(FRONTEND_URL + "/platform-auth-success");
     }
 
     @GetMapping("/connect/youtubemusic")
@@ -141,7 +149,7 @@ public class PlatformAuthController {
                 .queryParam("client_id", registration.getClientId())
                 .queryParam("response_type", "code")
                 .queryParam("scope", String.join(" ", registration.getScopes()))
-                .queryParam("redirect_uri", registration.getRedirectUri().replace("{baseUrl}", "http://localhost:8080"))
+                .queryParam("redirect_uri", registration.getRedirectUri().replace("{baseUrl}", BASE_URL))
                 .queryParam("state", state)
                 .queryParam("access_type", "offline")
                 .build()
@@ -160,13 +168,13 @@ public class PlatformAuthController {
         OAuth2AuthorizationRequest authorizationRequest = OAuth2AuthorizationRequest.authorizationCode()
                 .authorizationUri(registration.getProviderDetails().getAuthorizationUri())
                 .clientId(registration.getClientId())
-                .redirectUri(registration.getRedirectUri().replace("{baseUrl}", "http://localhost:8080"))
+                .redirectUri(registration.getRedirectUri().replace("{baseUrl}", BASE_URL))
                 .scopes(registration.getScopes())
                 .state(state)
                 .build();
 
         OAuth2AuthorizationResponse authorizationResponse = OAuth2AuthorizationResponse.success(code)
-                .redirectUri(registration.getRedirectUri().replace("{baseUrl}", "http://localhost:8080"))
+                .redirectUri(registration.getRedirectUri().replace("{baseUrl}", BASE_URL))
                 .build();
 
         OAuth2AuthorizationCodeGrantRequest grantRequest = new OAuth2AuthorizationCodeGrantRequest(
@@ -189,16 +197,15 @@ public class PlatformAuthController {
             stateManager.putTempToken(state, tokenResponse);
         }
 
-        response.sendRedirect("http://localhost:5173/platform-auth-success");
+        response.sendRedirect(FRONTEND_URL + "/platform-auth-success");
     }
 
-
-    @GetMapping("/connect/soundcloud")
-    public void connectSoundCloud(
+    @GetMapping("/connect/spotify")
+    public void connectSpotify(
             @RequestParam(value = "jwt_token", required = false) String token,
             HttpServletResponse response) throws IOException {
 
-        ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("soundcloud");
+        ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("spotify");
         String state = stateManager.generateState();
 
         if (token != null && !token.isBlank()) {
@@ -217,31 +224,33 @@ public class PlatformAuthController {
                 .queryParam("client_id", registration.getClientId())
                 .queryParam("response_type", "code")
                 .queryParam("scope", String.join(" ", registration.getScopes()))
-                .queryParam("redirect_uri", registration.getRedirectUri().replace("{baseUrl}", "http://localhost:8080"))
+                .queryParam("redirect_uri", registration.getRedirectUri().replace("{baseUrl}", BASE_URL))
                 .queryParam("state", state)
+                .queryParam("show_dialog", "true") // optional: forces Spotify login screen
                 .build()
                 .toUriString();
 
         response.sendRedirect(authUri);
     }
 
-    @GetMapping("/callback/soundcloud")
-    public void soundCloudCallback(@RequestParam("code") String code,
-                                   @RequestParam("state") String state,
-                                   HttpServletResponse response) throws IOException {
 
-        ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("soundcloud");
+    @GetMapping("/callback/spotify")
+    public void spotifyCallback(@RequestParam("code") String code,
+                                @RequestParam("state") String state,
+                                HttpServletResponse response) throws IOException {
+
+        ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("spotify");
 
         OAuth2AuthorizationRequest authorizationRequest = OAuth2AuthorizationRequest.authorizationCode()
                 .authorizationUri(registration.getProviderDetails().getAuthorizationUri())
                 .clientId(registration.getClientId())
-                .redirectUri(registration.getRedirectUri().replace("{baseUrl}", "http://localhost:8080"))
+                .redirectUri(registration.getRedirectUri().replace("{baseUrl}", BASE_URL))
                 .scopes(registration.getScopes())
                 .state(state)
                 .build();
 
         OAuth2AuthorizationResponse authorizationResponse = OAuth2AuthorizationResponse.success(code)
-                .redirectUri(registration.getRedirectUri().replace("{baseUrl}", "http://localhost:8080"))
+                .redirectUri(registration.getRedirectUri().replace("{baseUrl}", BASE_URL))
                 .build();
 
         OAuth2AuthorizationCodeGrantRequest grantRequest = new OAuth2AuthorizationCodeGrantRequest(
@@ -256,7 +265,7 @@ public class PlatformAuthController {
         if (userId != null) {
             oauthTokenService.save(
                     userId,
-                    StreamingPlatform.SOUNDCLOUD,
+                    StreamingPlatform.SPOTIFY,
                     tokenResponse.getAccessToken().getTokenValue(),
                     tokenResponse.getRefreshToken() != null ? tokenResponse.getRefreshToken().getTokenValue() : null,
                     tokenResponse.getAccessToken().getExpiresAt());
@@ -264,7 +273,7 @@ public class PlatformAuthController {
             stateManager.putTempToken(state, tokenResponse);
         }
 
-        response.sendRedirect("http://localhost:5173/platform-auth-success");
+        response.sendRedirect(FRONTEND_URL + "/platform-auth-success");
     }
 
 }

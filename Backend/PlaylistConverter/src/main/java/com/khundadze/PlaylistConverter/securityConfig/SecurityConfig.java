@@ -1,6 +1,7 @@
 package com.khundadze.PlaylistConverter.securityConfig;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -19,6 +20,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+    @Value("${FRONTEND_URL}")
+    private String FRONTEND_URL;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
@@ -63,7 +67,7 @@ public class SecurityConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:5173") // your frontend
+                        .allowedOrigins(FRONTEND_URL) // your frontend
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowCredentials(true);
             }
