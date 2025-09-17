@@ -19,7 +19,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class OAuthTokenService {
+public class OAuthTokenService { // TODO: add token encryption
 
     private final OAuthTokenRepository tokenRepository;
     private final UserRepository userRepository;

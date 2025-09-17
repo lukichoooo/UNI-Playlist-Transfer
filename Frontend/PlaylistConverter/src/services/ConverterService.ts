@@ -29,6 +29,7 @@ class ConverterService
         try
         {
             const platformPath = platform.toLowerCase();
+
             let authUrl = `${PLATFORM_AUTH_URL}/${platformPath}`;
 
             // If the user is logged in, append their JWT to the URL.
@@ -39,10 +40,14 @@ class ConverterService
                 {
                     authUrl += `?jwt_token=${token}`;
                 }
+                await openOAuthPopup(authUrl);
+            }
+            else
+            {
+                // TODO: Handle the case where the user is not logged in.
+                throw new Error("User must be logged in to authenticate with a platform.");
             }
 
-            // The popup will now open the URL with or without the token.
-            await openOAuthPopup(authUrl);
         } catch (err)
         {
             console.error(`OAuth login failed for ${platform}:`, err);

@@ -35,6 +35,13 @@ public class PlatformAuthController {
     private final UserDetailsService userDetailsService;
     private final StateManager stateManager;
 
+    @GetMapping("/tempToken")
+    public OAuthTokenResponseDto getTempToken(@RequestParam String state, @RequestParam String platform) {
+        OAuth2AccessTokenResponse tokenResponse = stateManager.removeTempToken(state);
+        return new OAuthTokenResponseDto(tokenResponse.getAccessToken().getTokenValue(), StreamingPlatform.valueOf(platform));
+    }
+
+
     @GetMapping("/connect/youtube")
     public void connectYoutube(
             @RequestParam(value = "jwt_token", required = false) String token,
@@ -110,9 +117,154 @@ public class PlatformAuthController {
         response.sendRedirect("http://localhost:5173/platform-auth-success");
     }
 
-    @GetMapping("/tempToken")
-    public OAuthTokenResponseDto getTempToken(@RequestParam String state) {
-        OAuth2AccessTokenResponse tokenResponse = stateManager.removeTempToken(state);
-        return new OAuthTokenResponseDto(tokenResponse.getAccessToken().getTokenValue(), StreamingPlatform.YOUTUBE);
+    @GetMapping("/connect/youtubemusic")
+    public void connectYoutubemusic(
+            @RequestParam(value = "jwt_token", required = false) String token,
+            HttpServletResponse response) throws IOException {
+
+        ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("youtubemusic");
+        String state = stateManager.generateState();
+
+        if (token != null && !token.isBlank()) {
+            try {
+                String username = jwtService.extractUsername(token);
+                User user = (User) userDetailsService.loadUserByUsername(username);
+                if (jwtService.isTokenValid(token, user)) {
+                    stateManager.putUser(state, user.getId());
+                }
+            } catch (Exception ignored) {
+            }
+        }
+
+        String authUri = UriComponentsBuilder
+                .fromUriString(registration.getProviderDetails().getAuthorizationUri())
+                .queryParam("client_id", registration.getClientId())
+                .queryParam("response_type", "code")
+                .queryParam("scope", String.join(" ", registration.getScopes()))
+                .queryParam("redirect_uri", registration.getRedirectUri().replace("{baseUrl}", "http://localhost:8080"))
+                .queryParam("state", state)
+                .queryParam("access_type", "offline")
+                .build()
+                .toUriString();
+
+        response.sendRedirect(authUri);
     }
+
+    @GetMapping("/callback/youtubemusic")
+    public void youtubemusicCallback(@RequestParam("code") String code,
+                                     @RequestParam("state") String state,
+                                     HttpServletResponse response) throws IOException {
+
+        ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("youtubemusic");
+
+        OAuth2AuthorizationRequest authorizationRequest = OAuth2AuthorizationRequest.authorizationCode()
+                .authorizationUri(registration.getProviderDetails().getAuthorizationUri())
+                .clientId(registration.getClientId())
+                .redirectUri(registration.getRedirectUri().replace("{baseUrl}", "http://localhost:8080"))
+                .scopes(registration.getScopes())
+                .state(state)
+                .build();
+
+        OAuth2AuthorizationResponse authorizationResponse = OAuth2AuthorizationResponse.success(code)
+                .redirectUri(registration.getRedirectUri().replace("{baseUrl}", "http://localhost:8080"))
+                .build();
+
+        OAuth2AuthorizationCodeGrantRequest grantRequest = new OAuth2AuthorizationCodeGrantRequest(
+                registration,
+                new OAuth2AuthorizationExchange(authorizationRequest, authorizationResponse));
+
+        OAuth2AccessTokenResponse tokenResponse = new DefaultAuthorizationCodeTokenResponseClient()
+                .getTokenResponse(grantRequest);
+
+        Long userId = stateManager.removeUser(state);
+
+        if (userId != null) {
+            oauthTokenService.save(
+                    userId,
+                    StreamingPlatform.YOUTUBEMUSIC,
+                    tokenResponse.getAccessToken().getTokenValue(),
+                    tokenResponse.getRefreshToken() != null ? tokenResponse.getRefreshToken().getTokenValue() : null,
+                    tokenResponse.getAccessToken().getExpiresAt());
+        } else {
+            stateManager.putTempToken(state, tokenResponse);
+        }
+
+        response.sendRedirect("http://localhost:5173/platform-auth-success");
+    }
+
+
+    @GetMapping("/connect/soundcloud")
+    public void connectSoundCloud(
+            @RequestParam(value = "jwt_token", required = false) String token,
+            HttpServletResponse response) throws IOException {
+
+        ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("soundcloud");
+        String state = stateManager.generateState();
+
+        if (token != null && !token.isBlank()) {
+            try {
+                String username = jwtService.extractUsername(token);
+                User user = (User) userDetailsService.loadUserByUsername(username);
+                if (jwtService.isTokenValid(token, user)) {
+                    stateManager.putUser(state, user.getId());
+                }
+            } catch (Exception ignored) {
+            }
+        }
+
+        String authUri = UriComponentsBuilder
+                .fromUriString(registration.getProviderDetails().getAuthorizationUri())
+                .queryParam("client_id", registration.getClientId())
+                .queryParam("response_type", "code")
+                .queryParam("scope", String.join(" ", registration.getScopes()))
+                .queryParam("redirect_uri", registration.getRedirectUri().replace("{baseUrl}", "http://localhost:8080"))
+                .queryParam("state", state)
+                .build()
+                .toUriString();
+
+        response.sendRedirect(authUri);
+    }
+
+    @GetMapping("/callback/soundcloud")
+    public void soundCloudCallback(@RequestParam("code") String code,
+                                   @RequestParam("state") String state,
+                                   HttpServletResponse response) throws IOException {
+
+        ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("soundcloud");
+
+        OAuth2AuthorizationRequest authorizationRequest = OAuth2AuthorizationRequest.authorizationCode()
+                .authorizationUri(registration.getProviderDetails().getAuthorizationUri())
+                .clientId(registration.getClientId())
+                .redirectUri(registration.getRedirectUri().replace("{baseUrl}", "http://localhost:8080"))
+                .scopes(registration.getScopes())
+                .state(state)
+                .build();
+
+        OAuth2AuthorizationResponse authorizationResponse = OAuth2AuthorizationResponse.success(code)
+                .redirectUri(registration.getRedirectUri().replace("{baseUrl}", "http://localhost:8080"))
+                .build();
+
+        OAuth2AuthorizationCodeGrantRequest grantRequest = new OAuth2AuthorizationCodeGrantRequest(
+                registration,
+                new OAuth2AuthorizationExchange(authorizationRequest, authorizationResponse));
+
+        OAuth2AccessTokenResponse tokenResponse = new DefaultAuthorizationCodeTokenResponseClient()
+                .getTokenResponse(grantRequest);
+
+        Long userId = stateManager.removeUser(state);
+
+        if (userId != null) {
+            oauthTokenService.save(
+                    userId,
+                    StreamingPlatform.SOUNDCLOUD,
+                    tokenResponse.getAccessToken().getTokenValue(),
+                    tokenResponse.getRefreshToken() != null ? tokenResponse.getRefreshToken().getTokenValue() : null,
+                    tokenResponse.getAccessToken().getExpiresAt());
+        } else {
+            stateManager.putTempToken(state, tokenResponse);
+        }
+
+        response.sendRedirect("http://localhost:5173/platform-auth-success");
+    }
+
 }

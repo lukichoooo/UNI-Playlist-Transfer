@@ -1,7 +1,7 @@
 package com.khundadze.PlaylistConverter.enums;
 
 public enum StreamingPlatform {
-    SPOTIFY, YOUTUBE, SOUNDCLOUD, DEEZER, APPLEMUSIC;
+    SPOTIFY, YOUTUBE, YOUTUBEMUSIC, SOUNDCLOUD, DEEZER, APPLEMUSIC;
 
     public static StreamingPlatform valueOfSafe(String name) {
         try {
@@ -18,6 +18,7 @@ public enum StreamingPlatform {
         return switch (registrationId.toLowerCase()) {
             case "spotify" -> SPOTIFY;
             case "youtube" -> YOUTUBE;
+            case "youtubemusic" -> YOUTUBEMUSIC;
             case "soundcloud" -> SOUNDCLOUD;
             case "deezer" -> DEEZER;
             case "applemusic", "apple-music" -> APPLEMUSIC;

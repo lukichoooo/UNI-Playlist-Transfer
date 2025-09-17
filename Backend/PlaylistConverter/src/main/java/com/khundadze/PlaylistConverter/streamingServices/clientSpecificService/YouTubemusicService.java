@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class YouTubeService implements IMusicService { // TODO:
+public class YouTubemusicService implements IMusicService { // TODO:
 
     @Override
     public List<PlaylistSearchDto> getUsersPlaylists(String accessToken) {
