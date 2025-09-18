@@ -92,10 +92,14 @@ public class OAuthTokenService {
         }
         Long userId = userProvider.getId();
 
+        Instant now = Instant.now();
+
         return tokenRepository.findAllByUser_Id(userId).stream()
+                .filter(token -> token.getExpiresAt() == null || token.getExpiresAt().isAfter(now))
                 .map(OAuthToken::getPlatform)
                 .distinct()
                 .toList();
     }
+
 
 }

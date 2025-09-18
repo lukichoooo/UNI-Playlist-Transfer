@@ -2,6 +2,7 @@ package com.khundadze.PlaylistConverter.oauthTokenTest;
 
 import com.khundadze.PlaylistConverter.dtos.OAuthTokenResponseDto;
 import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
+import com.khundadze.PlaylistConverter.exceptions.UserNotFoundException;
 import com.khundadze.PlaylistConverter.models_db.OAuthToken;
 import com.khundadze.PlaylistConverter.models_db.OAuthTokenId;
 import com.khundadze.PlaylistConverter.models_db.User;
@@ -23,8 +24,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class OAuthTokenServiceTest {
 
@@ -64,15 +64,32 @@ class OAuthTokenServiceTest {
                 .expiresAt(Instant.now())
                 .build();
 
-        OAuthTokenResponseDto dto = new OAuthTokenResponseDto("newAccess", StreamingPlatform.SPOTIFY);
+        // DTO returned after encryption+save and decryption
+        OAuthTokenResponseDto decryptedDto = new OAuthTokenResponseDto("newAccess", StreamingPlatform.SPOTIFY);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(tokenRepository.findByIdUserIdAndIdPlatform(userId, StreamingPlatform.SPOTIFY))
                 .thenReturn(Optional.of(existing));
-        when(tokenRepository.save(existing)).thenReturn(existing);
-        when(mapper.toOAuthTokenResponseDto(existing)).thenReturn(dto);
 
-        OAuthTokenResponseDto result = service.save(userId, StreamingPlatform.SPOTIFY, "newAccess", "newRefresh", expiry);
+        // Mock the encryption step
+        when(mapper.encryptToken(existing)).thenReturn(existing);
+
+        // Mock the save to return the same token
+        when(tokenRepository.save(existing)).thenReturn(existing);
+
+        // Mock the conversion to DTO
+        when(mapper.toOAuthTokenResponseDto(existing)).thenReturn(decryptedDto);
+
+        // Mock decryption step (so we get plain values in DTO)
+        when(mapper.decryptTokenDto(decryptedDto)).thenReturn(decryptedDto);
+
+        OAuthTokenResponseDto result = service.save(
+                userId,
+                StreamingPlatform.SPOTIFY,
+                "newAccess",
+                "newRefresh",
+                expiry
+        );
 
         assertNotNull(result);
         assertEquals("newAccess", result.accessToken());
@@ -80,6 +97,8 @@ class OAuthTokenServiceTest {
         assertEquals(expiry, existing.getExpiresAt());
 
         verify(tokenRepository).save(existing);
+        verify(mapper).encryptToken(existing);
+        verify(mapper).decryptTokenDto(decryptedDto);
     }
 
     @Test
@@ -94,19 +113,27 @@ class OAuthTokenServiceTest {
         User user = new User();
         user.setId(userId);
 
-        OAuthToken savedToken = new OAuthToken();
-        savedToken.setId(new OAuthTokenId(userId, platform));
-        savedToken.setUser(user);
-        savedToken.setAccessToken(accessToken);
-        savedToken.setRefreshToken(refreshToken);
-        savedToken.setExpiresAt(expiry);
+        OAuthToken newToken = new OAuthToken();
+        newToken.setId(new OAuthTokenId(userId, platform));
+        newToken.setUser(user);
+        newToken.setAccessToken(accessToken);
+        newToken.setRefreshToken(refreshToken);
+        newToken.setExpiresAt(expiry);
 
         OAuthTokenResponseDto responseDto = new OAuthTokenResponseDto(accessToken, platform);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(tokenRepository.findByIdUserIdAndIdPlatform(userId, platform)).thenReturn(Optional.empty());
-        when(tokenRepository.save(any(OAuthToken.class))).thenReturn(savedToken);
-        when(mapper.toOAuthTokenResponseDto(savedToken)).thenReturn(responseDto);
+
+        // Mock encryptToken to return the same token
+        when(mapper.encryptToken(any(OAuthToken.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Mock save to return the saved token
+        when(tokenRepository.save(any(OAuthToken.class))).thenReturn(newToken);
+
+        // Mock mapping and decryption
+        when(mapper.toOAuthTokenResponseDto(newToken)).thenReturn(responseDto);
+        when(mapper.decryptTokenDto(responseDto)).thenReturn(responseDto);
 
         // Act
         OAuthTokenResponseDto result = service.save(userId, platform, accessToken, refreshToken, expiry);
@@ -114,15 +141,21 @@ class OAuthTokenServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(accessToken, result.accessToken());
+        assertEquals(platform, result.service());
 
         ArgumentCaptor<OAuthToken> captor = ArgumentCaptor.forClass(OAuthToken.class);
         verify(tokenRepository).save(captor.capture());
         OAuthToken tokenSaved = captor.getValue();
+
         assertEquals(userId, tokenSaved.getUser().getId());
         assertEquals(platform, tokenSaved.getId().getPlatform());
         assertEquals(accessToken, tokenSaved.getAccessToken());
         assertEquals(refreshToken, tokenSaved.getRefreshToken());
         assertEquals(expiry, tokenSaved.getExpiresAt());
+
+        // Verify mapper calls
+        verify(mapper).encryptToken(tokenSaved);
+        verify(mapper).decryptTokenDto(responseDto);
     }
 
 
@@ -132,9 +165,13 @@ class OAuthTokenServiceTest {
 
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () ->
+        assertThrows(UserNotFoundException.class, () ->
                 service.save(userId, StreamingPlatform.SOUNDCLOUD, "a", "r", Instant.now()));
+
+        // No mapper or repository save calls should happen
+        verifyNoInteractions(mapper, tokenRepository);
     }
+
 
     @Test
     void getValidAccessTokenDto_shouldReturnDtoIfValid() {
@@ -147,17 +184,23 @@ class OAuthTokenServiceTest {
                 .expiresAt(Instant.now().plusSeconds(60))
                 .build();
 
+        OAuthTokenResponseDto dto = new OAuthTokenResponseDto("valid", StreamingPlatform.SOUNDCLOUD);
+
         when(tokenRepository.findByIdUserIdAndIdPlatform(1L, StreamingPlatform.SOUNDCLOUD))
                 .thenReturn(Optional.of(token));
-        when(mapper.toOAuthTokenResponseDto(token))
-                .thenReturn(new OAuthTokenResponseDto("valid", StreamingPlatform.SOUNDCLOUD));
+
+        when(mapper.toOAuthTokenResponseDto(token)).thenReturn(dto);
+        when(mapper.decryptTokenDto(dto)).thenReturn(dto); // mock decryption
 
         OAuthTokenResponseDto result = service.getValidAccessTokenDto(StreamingPlatform.SOUNDCLOUD);
 
         assertNotNull(result);
         assertEquals("valid", result.accessToken());
         assertEquals(StreamingPlatform.SOUNDCLOUD, result.service());
+
+        verify(mapper).decryptTokenDto(dto);
     }
+
 
     @Test
     void getValidAccessTokenDto_shouldReturnNullIfExpired() {
@@ -173,11 +216,18 @@ class OAuthTokenServiceTest {
         when(tokenRepository.findByIdUserIdAndIdPlatform(1L, StreamingPlatform.SOUNDCLOUD))
                 .thenReturn(Optional.of(token));
 
-        assertNull(service.getValidAccessTokenDto(StreamingPlatform.SOUNDCLOUD));
+        OAuthTokenResponseDto result = service.getValidAccessTokenDto(StreamingPlatform.SOUNDCLOUD);
+
+        assertNull(result);
+
+        // Verify that mapper methods are NOT called for expired token
+        verifyNoInteractions(mapper);
     }
+
 
     @Test
     void deleteOAuthTokenForUser_shouldDeleteIfExists() {
+        // Arrange
         when(userProvider.getId()).thenReturn(1L);
 
         OAuthTokenId id = new OAuthTokenId(1L, StreamingPlatform.SPOTIFY);
@@ -186,10 +236,13 @@ class OAuthTokenServiceTest {
         when(tokenRepository.findByIdUserIdAndIdPlatform(1L, StreamingPlatform.SPOTIFY))
                 .thenReturn(Optional.of(token));
 
+        // Act
         service.deleteOAuthTokenForUser(StreamingPlatform.SPOTIFY);
 
+        // Assert
         verify(tokenRepository).delete(token);
     }
+
 
     @Test
     void getAllOAuthTokensForUser_shouldReturnDtos() {
@@ -203,10 +256,15 @@ class OAuthTokenServiceTest {
 
         when(tokenRepository.findAllByUser_Id(5L)).thenReturn(List.of(token1, token2));
 
-        when(mapper.toOAuthTokenResponseDto(token1))
-                .thenReturn(new OAuthTokenResponseDto("a1", StreamingPlatform.SPOTIFY));
-        when(mapper.toOAuthTokenResponseDto(token2))
-                .thenReturn(new OAuthTokenResponseDto("a2", StreamingPlatform.YOUTUBE));
+        OAuthTokenResponseDto dto1 = new OAuthTokenResponseDto("a1", StreamingPlatform.SPOTIFY);
+        OAuthTokenResponseDto dto2 = new OAuthTokenResponseDto("a2", StreamingPlatform.YOUTUBE);
+
+        when(mapper.toOAuthTokenResponseDto(token1)).thenReturn(dto1);
+        when(mapper.toOAuthTokenResponseDto(token2)).thenReturn(dto2);
+
+        // Mock decryption for each DTO
+        when(mapper.decryptTokenDto(dto1)).thenReturn(dto1);
+        when(mapper.decryptTokenDto(dto2)).thenReturn(dto2);
 
         List<OAuthTokenResponseDto> result = service.getAllOAuthTokensForUser();
 
@@ -215,9 +273,14 @@ class OAuthTokenServiceTest {
         assertEquals(StreamingPlatform.SPOTIFY, result.get(0).service());
         assertEquals("a2", result.get(1).accessToken());
         assertEquals(StreamingPlatform.YOUTUBE, result.get(1).service());
+
+        verify(mapper).decryptTokenDto(dto1);
+        verify(mapper).decryptTokenDto(dto2);
     }
 
+
     // Add this test for getAuthenticatedPlatforms when user is not logged in
+    // TODO: should change when i add caching
     @Test
     void getAuthenticatedPlatforms_shouldReturnEmptyListWhenUserNotLoggedIn() {
         when(userProvider.isLoggedIn()).thenReturn(false);
@@ -244,29 +307,50 @@ class OAuthTokenServiceTest {
         when(userProvider.getId()).thenReturn(1L);
         when(tokenRepository.findByIdUserIdAndIdPlatform(1L, StreamingPlatform.SPOTIFY))
                 .thenReturn(Optional.empty());
+        when(mapper.decryptTokenDto(any(OAuthTokenResponseDto.class))).thenReturn(null);
 
         assertNull(service.getValidAccessTokenDto(StreamingPlatform.SPOTIFY));
     }
 
-    // Simplify the getAuthenticatedPlatforms test
     @Test
-    void getAuthenticatedPlatforms_shouldReturnDistinctPlatforms() {
+    void getAuthenticatedPlatforms_shouldReturnOnlyValidPlatforms() {
         when(userProvider.isLoggedIn()).thenReturn(true);
         when(userProvider.getId()).thenReturn(5L);
 
+        Instant now = Instant.now();
+
+        // Valid token
         OAuthTokenId id1 = new OAuthTokenId(5L, StreamingPlatform.SPOTIFY);
-        OAuthToken token1 = OAuthToken.builder().id(id1).accessToken("a1").build();
+        OAuthToken token1 = OAuthToken.builder()
+                .id(id1)
+                .accessToken("a1")
+                .expiresAt(now.plusSeconds(60)) // valid
+                .build();
 
+        // Expired token
         OAuthTokenId id2 = new OAuthTokenId(5L, StreamingPlatform.YOUTUBE);
-        OAuthToken token2 = OAuthToken.builder().id(id2).accessToken("a2").build();
+        OAuthToken token2 = OAuthToken.builder()
+                .id(id2)
+                .accessToken("a2")
+                .expiresAt(now.minusSeconds(60)) // expired
+                .build();
 
-        // Only need 2 tokens with different platforms
-        when(tokenRepository.findAllByUser_Id(5L)).thenReturn(List.of(token1, token2));
+        // Another valid token on the same platform as token1 (duplicate)
+        OAuthTokenId id3 = new OAuthTokenId(5L, StreamingPlatform.SPOTIFY);
+        OAuthToken token3 = OAuthToken.builder()
+                .id(id3)
+                .accessToken("a3")
+                .expiresAt(null) // no expiry, valid
+                .build();
+
+        when(tokenRepository.findAllByUser_Id(5L))
+                .thenReturn(List.of(token1, token2, token3));
 
         List<StreamingPlatform> result = service.getAuthenticatedPlatforms();
 
-        assertEquals(2, result.size());
+        assertEquals(1, result.size()); // only SPOTIFY is valid
         assertTrue(result.contains(StreamingPlatform.SPOTIFY));
-        assertTrue(result.contains(StreamingPlatform.YOUTUBE));
+        assertFalse(result.contains(StreamingPlatform.YOUTUBE));
     }
+
 }
