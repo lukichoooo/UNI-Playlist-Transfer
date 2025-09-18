@@ -1,6 +1,7 @@
 package com.khundadze.PlaylistConverter.oauthTokenTest;
 
 import com.khundadze.PlaylistConverter.dtos.OAuthTokenResponseDto;
+import com.khundadze.PlaylistConverter.dtos.PlaylistSearchDto;
 import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 import com.khundadze.PlaylistConverter.exceptions.UserNotAuthorizedForStreamingPlatformException;
 import com.khundadze.PlaylistConverter.models.Music;
@@ -42,19 +43,23 @@ class MusicServiceManagerTest {
     }
 
     @Test
-    void getUsersPlaylists_shouldReturnPlaylists() {
+    void getUsersPlaylists_shouldReturnSortedPlaylists() {
         StreamingPlatform platform = StreamingPlatform.SPOTIFY;
         OAuthTokenResponseDto tokenDto = new OAuthTokenResponseDto("token123", platform);
-        Playlist playlist = Playlist.builder().name("My Playlist").build();
+
+        PlaylistSearchDto p1 = new PlaylistSearchDto("id1", "b Playlist", 1);
+        PlaylistSearchDto p2 = new PlaylistSearchDto("id2", "a Playlist", 2);
 
         when(tokenService.getValidAccessTokenDto(platform)).thenReturn(tokenDto);
         when(registry.getService(platform)).thenReturn(spotifyService);
-        when(spotifyService.getUsersPlaylists("token123")).thenReturn(List.of(playlist));
+        when(spotifyService.getUsersPlaylists("token123")).thenReturn(List.of(p1, p2));
 
-        List<Playlist> result = manager.getUsersPlaylists(platform);
+        List<PlaylistSearchDto> result = manager.getUsersPlaylists(platform);
 
-        assertEquals(1, result.size());
-        assertEquals("My Playlist", result.get(0).getName());
+        assertEquals(2, result.size());
+        assertEquals("a Playlist", result.get(0).name());
+        assertEquals("b Playlist", result.get(1).name());
+
         verify(tokenService).getValidAccessTokenDto(platform);
         verify(spotifyService).getUsersPlaylists("token123");
     }
@@ -72,7 +77,7 @@ class MusicServiceManagerTest {
     void getPlaylistTracks_shouldReturnTracks() {
         StreamingPlatform platform = StreamingPlatform.SPOTIFY;
         OAuthTokenResponseDto tokenDto = new OAuthTokenResponseDto("token123", platform);
-        Music track = Music.builder().name("Song 1").build();
+        Music track = Music.builder().id("t1").name("Song 1").build();
 
         when(tokenService.getValidAccessTokenDto(platform)).thenReturn(tokenDto);
         when(registry.getService(platform)).thenReturn(spotifyService);
@@ -102,5 +107,10 @@ class MusicServiceManagerTest {
         assertEquals("New Playlist", result.getName());
         verify(tokenService).getValidAccessTokenDto(platform);
         verify(spotifyService).createPlaylist("token123", "New Playlist", List.of("track1", "track2"));
+    }
+
+    @Test
+    void transferPlaylist_shouldTransferTracks() {
+        // TODO: unimplemented method
     }
 }

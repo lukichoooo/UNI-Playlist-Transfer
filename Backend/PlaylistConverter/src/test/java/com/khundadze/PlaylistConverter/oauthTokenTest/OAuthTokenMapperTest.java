@@ -1,18 +1,16 @@
 package com.khundadze.PlaylistConverter.oauthTokenTest;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import com.khundadze.PlaylistConverter.dtos.OAuthTokenResponseDto;
 import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 import com.khundadze.PlaylistConverter.models_db.OAuthToken;
 import com.khundadze.PlaylistConverter.models_db.OAuthTokenId;
 import com.khundadze.PlaylistConverter.models_db.User;
+import com.khundadze.PlaylistConverter.services.OAuthTokenEncryptor;
 import com.khundadze.PlaylistConverter.services.OAuthTokenMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class OAuthTokenMapperTest {
 
@@ -20,7 +18,9 @@ class OAuthTokenMapperTest {
 
     @BeforeEach
     void setUp() {
-        mapper = new OAuthTokenMapper();
+        // Provide a real encryptor
+        OAuthTokenEncryptor encryptor = new OAuthTokenEncryptor("test-password", "12345678");
+        mapper = new OAuthTokenMapper(encryptor);
     }
 
     @Test
@@ -54,9 +54,6 @@ class OAuthTokenMapperTest {
 
     @Test
     void testToOAuthTokenResponseDto_mapsCorrectly() {
-        User user = new User();
-        user.setId(1L);
-
         OAuthToken token = OAuthToken.builder()
                 .id(new OAuthTokenId(1L, StreamingPlatform.YOUTUBE))
                 .accessToken("abc123")
@@ -68,5 +65,54 @@ class OAuthTokenMapperTest {
         assertNotNull(dto);
         assertEquals("abc123", dto.accessToken());
         assertEquals(StreamingPlatform.YOUTUBE, dto.service());
+    }
+
+    // ===================== NEW TESTS =====================
+
+    @Test
+    void testEncryptToken_encryptsAccessAndRefreshTokens() {
+        OAuthToken token = OAuthToken.builder()
+                .id(new OAuthTokenId(1L, StreamingPlatform.SPOTIFY))
+                .accessToken("my-access")
+                .refreshToken("my-refresh")
+                .build();
+
+        OAuthToken encrypted = mapper.encryptToken(token);
+
+        assertNotNull(encrypted.getAccessToken());
+        assertNotNull(encrypted.getRefreshToken());
+        assertNotEquals("my-access", encrypted.getAccessToken());
+        assertNotEquals("my-refresh", encrypted.getRefreshToken());
+    }
+
+    @Test
+    void testDecryptTokenDto_decryptsAccessTokenCorrectly() {
+        OAuthToken token = OAuthToken.builder()
+                .id(new OAuthTokenId(1L, StreamingPlatform.SPOTIFY))
+                .accessToken("my-access")
+                .build();
+
+        OAuthToken encrypted = mapper.encryptToken(token);
+        OAuthTokenResponseDto dto = mapper.toOAuthTokenResponseDto(encrypted);
+
+        OAuthTokenResponseDto decrypted = mapper.decryptTokenDto(dto);
+
+        assertEquals("my-access", decrypted.accessToken());
+        assertEquals(StreamingPlatform.SPOTIFY, decrypted.service());
+    }
+
+    @Test
+    void testEncryptThenDecrypt_roundTrip() {
+        OAuthToken token = OAuthToken.builder()
+                .id(new OAuthTokenId(1L, StreamingPlatform.SPOTIFY))
+                .accessToken("roundtrip-access")
+                .refreshToken("roundtrip-refresh")
+                .build();
+
+        OAuthToken encrypted = mapper.encryptToken(token);
+        OAuthTokenResponseDto dto = mapper.toOAuthTokenResponseDto(encrypted);
+        OAuthTokenResponseDto decrypted = mapper.decryptTokenDto(dto);
+
+        assertEquals("roundtrip-access", decrypted.accessToken());
     }
 }

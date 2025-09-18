@@ -19,7 +19,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class OAuthTokenService { // TODO: add token encryption
+public class OAuthTokenService {
 
     private final OAuthTokenRepository tokenRepository;
     private final UserRepository userRepository;
@@ -53,7 +53,7 @@ public class OAuthTokenService { // TODO: add token encryption
             token.setRefreshToken(refreshToken);
             token.setExpiresAt(expiry);
         }
-        return mapper.toOAuthTokenResponseDto(tokenRepository.save(token));
+        return mapper.decryptTokenDto(mapper.toOAuthTokenResponseDto(tokenRepository.save(mapper.encryptToken(token))));
     }
 
 
@@ -64,6 +64,7 @@ public class OAuthTokenService { // TODO: add token encryption
         return tokenRepository.findByIdUserIdAndIdPlatform(userId, service)
                 .filter(token -> token.getExpiresAt() == null || token.getExpiresAt().isAfter(Instant.now()))
                 .map(mapper::toOAuthTokenResponseDto)
+                .map(mapper::decryptTokenDto)
                 .orElse(null);
     }
 
@@ -78,7 +79,10 @@ public class OAuthTokenService { // TODO: add token encryption
     @Transactional(readOnly = true)
     public List<OAuthTokenResponseDto> getAllOAuthTokensForUser() {
         Long userId = userProvider.getId();
-        return tokenRepository.findAllByUser_Id(userId).stream().map(mapper::toOAuthTokenResponseDto).toList();
+        return tokenRepository.findAllByUser_Id(userId).stream()
+                .map(mapper::toOAuthTokenResponseDto)
+                .map(mapper::decryptTokenDto)
+                .toList();
     }
 
     @Transactional(readOnly = true)

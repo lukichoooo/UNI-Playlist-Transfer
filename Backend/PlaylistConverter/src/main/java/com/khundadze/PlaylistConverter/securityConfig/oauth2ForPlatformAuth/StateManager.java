@@ -63,7 +63,7 @@ public class StateManager { // TODO: replace with Redis
     }
 
     // --- Internal helper class to track timestamp ---
-    private static class TimedToken {
+    public static class TimedToken {
         OAuth2AccessTokenResponse token;
         long timestamp; // epoch seconds
 

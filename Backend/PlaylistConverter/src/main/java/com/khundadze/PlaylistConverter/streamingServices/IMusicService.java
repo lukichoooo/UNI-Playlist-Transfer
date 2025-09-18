@@ -12,4 +12,6 @@ public interface IMusicService {
     List<Music> getPlaylistsTracks(String accessToken, String playlistId);
 
     Playlist createPlaylist(String accessToken, String playlistName, List<String> trackIds);
+
+    //TODO: String findTrackId(Music music);
 }
