@@ -17,6 +17,8 @@ public class StateManager { // TODO: replace with Redis
 
     private final Map<String, Long> stateToUserId = new ConcurrentHashMap<>();
     private final Map<String, TimedToken> tempTokens = new ConcurrentHashMap<>();
+    private final Map<String, String> stateToCodeVerifier = new ConcurrentHashMap<>();
+
 
     private final long TEMP_TOKEN_TTL_SECONDS = 30 * 60; // 30 minutes
 
@@ -49,6 +51,15 @@ public class StateManager { // TODO: replace with Redis
             return null; // expired
         }
         return timed.token;
+    }
+
+    // --- PKCE code verifier mapping ---
+    public void putCodeVerifier(String state, String codeVerifier) {
+        stateToCodeVerifier.put(state, codeVerifier);
+    }
+
+    public String removeCodeVerifier(String state) {
+        return stateToCodeVerifier.remove(state);
     }
 
     // --- Internal helper class to track timestamp ---

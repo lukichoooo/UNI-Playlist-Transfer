@@ -1,21 +1,11 @@
 package com.khundadze.PlaylistConverter.models_db;
 
-import java.time.Instant;
-
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
+import jakarta.persistence.*;
+import lombok.*;
 
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.time.Instant;
 
 @Entity
 @Getter
@@ -28,8 +18,9 @@ public class OAuthToken {
 
     @EmbeddedId
     private OAuthTokenId id;
-
+    @Column(columnDefinition = "TEXT")
     private String accessToken;
+    @Column(columnDefinition = "TEXT")
     private String refreshToken;
     private Instant expiresAt;
 
