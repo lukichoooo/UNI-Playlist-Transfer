@@ -1,20 +1,22 @@
 package com.khundadze.PlaylistConverter.streamingServices.clientSpecificService;
 
 import com.khundadze.PlaylistConverter.dtos.PlaylistSearchDto;
+import com.khundadze.PlaylistConverter.dtos.TargetMusicDto;
 import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 import com.khundadze.PlaylistConverter.models.Music;
 import com.khundadze.PlaylistConverter.models.Playlist;
-import com.khundadze.PlaylistConverter.streamingServices.IMusicService;
+import com.khundadze.PlaylistConverter.streamingServices.MusicService;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 @Service
-public class SoundCloudService implements IMusicService {
+public class SoundCloudService extends MusicService {
 
     private static final String API_BASE = "https://api.soundcloud.com";
     private final RestTemplate restTemplate;
@@ -59,24 +61,6 @@ public class SoundCloudService implements IMusicService {
     }
 
     @Override
-    public List<Music> getPlaylistsTracks(String accessToken, String playlistId) {
-        ResponseEntity<Map> response = get(API_BASE + "/playlists/" + playlistId, accessToken, Map.class);
-        List<Music> tracks = new ArrayList<>();
-
-        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-            List<Map<String, Object>> items = (List<Map<String, Object>>) response.getBody().get("tracks");
-            if (items != null) {
-                for (Map<String, Object> track : items) {
-                    String id = String.valueOf(track.get("id"));
-                    String title = (String) track.get("title");
-                    tracks.add(Music.builder().id(id).name(title).build());
-                }
-            }
-        }
-        return tracks;
-    }
-
-    @Override
     public Playlist createPlaylist(String accessToken, String playlistName, List<String> trackIds) {
         String url = API_BASE + "/playlists";
         Map<String, Object> body = Map.of(
@@ -106,4 +90,53 @@ public class SoundCloudService implements IMusicService {
                 .musics(musics)
                 .build();
     }
+
+
+    @Override
+    public List<TargetMusicDto> getPlaylistsTracks(String accessToken, String playlistId) {
+        ResponseEntity<Map> response = get(API_BASE + "/playlists/" + playlistId, accessToken, Map.class);
+        List<TargetMusicDto> tracks = new ArrayList<>();
+
+        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+            List<Map<String, Object>> items = (List<Map<String, Object>>) response.getBody().get("tracks");
+            if (items != null) {
+                for (Map<String, Object> track : items) {
+                    String id = String.valueOf(track.get("id"));
+                    String title = (String) track.get("title");
+                    tracks.add(new TargetMusicDto(id, title, null, null, null));
+                }
+            }
+        }
+        return tracks;
+    }
+
+    @Override
+    public String findTrackId(String accessToken, TargetMusicDto target) {
+        if (target == null || target.name() == null) return null;
+
+        String query = UriComponentsBuilder
+                .fromHttpUrl(API_BASE + "/tracks")
+                .queryParam("q", target.name())
+                .queryParam("limit", 10)
+                .build().toUriString();
+
+        ResponseEntity<List> response = get(query, accessToken, List.class);
+        if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) return null;
+
+        for (Object obj : response.getBody()) {
+            Map<String, Object> track = (Map<String, Object>) obj;
+            String title = (String) track.get("title");
+            String artist = track.get("user") != null ? (String) ((Map<String, Object>) track.get("user")).get("username") : null;
+
+            // Simple matching: title and optionally artist
+            if (title != null && title.equalsIgnoreCase(target.name())) {
+                if (target.artist() == null || (artist != null && artist.equalsIgnoreCase(target.artist()))) {
+                    return String.valueOf(track.get("id"));
+                }
+            }
+        }
+        return null; // not found
+    }
+
+
 }

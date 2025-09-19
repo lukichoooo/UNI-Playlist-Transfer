@@ -4,10 +4,9 @@ import com.khundadze.PlaylistConverter.dtos.OAuthTokenResponseDto;
 import com.khundadze.PlaylistConverter.dtos.PlaylistSearchDto;
 import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 import com.khundadze.PlaylistConverter.exceptions.UserNotAuthorizedForStreamingPlatformException;
-import com.khundadze.PlaylistConverter.models.Music;
 import com.khundadze.PlaylistConverter.models.Playlist;
 import com.khundadze.PlaylistConverter.services.OAuthTokenService;
-import com.khundadze.PlaylistConverter.streamingServices.IMusicService;
+import com.khundadze.PlaylistConverter.streamingServices.MusicService;
 import com.khundadze.PlaylistConverter.streamingServices.MusicServiceManager;
 import com.khundadze.PlaylistConverter.streamingServices.StreamingPlatformRegistry;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +31,7 @@ class MusicServiceManagerTest {
     private OAuthTokenService tokenService;
 
     @Mock
-    private IMusicService spotifyService;
+    private MusicService spotifyService;
 
     @InjectMocks
     private MusicServiceManager manager;
@@ -71,24 +70,6 @@ class MusicServiceManagerTest {
 
         assertThrows(UserNotAuthorizedForStreamingPlatformException.class,
                 () -> manager.getUsersPlaylists(platform));
-    }
-
-    @Test
-    void getPlaylistTracks_shouldReturnTracks() {
-        StreamingPlatform platform = StreamingPlatform.SPOTIFY;
-        OAuthTokenResponseDto tokenDto = new OAuthTokenResponseDto("token123", platform);
-        Music track = Music.builder().id("t1").name("Song 1").build();
-
-        when(tokenService.getValidAccessTokenDto(platform)).thenReturn(tokenDto);
-        when(registry.getService(platform)).thenReturn(spotifyService);
-        when(spotifyService.getPlaylistsTracks("token123", "42L")).thenReturn(List.of(track));
-
-        List<Music> result = manager.getPlaylistTracks(platform, "42L");
-
-        assertEquals(1, result.size());
-        assertEquals("Song 1", result.get(0).getName());
-        verify(tokenService).getValidAccessTokenDto(platform);
-        verify(spotifyService).getPlaylistsTracks("token123", "42L");
     }
 
     @Test

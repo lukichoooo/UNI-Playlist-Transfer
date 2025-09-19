@@ -1,4 +1,12 @@
 package com.khundadze.PlaylistConverter.dtos;
 
-public record TargetMusicDto() {
+import java.util.List;
+
+public record TargetMusicDto(
+        String id,
+        String name,
+        String artist,
+        String album,
+        List<String> keywordsLowList
+) {
 }

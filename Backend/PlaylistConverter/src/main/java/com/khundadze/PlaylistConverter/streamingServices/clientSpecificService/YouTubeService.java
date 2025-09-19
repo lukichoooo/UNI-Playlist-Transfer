@@ -1,21 +1,29 @@
 package com.khundadze.PlaylistConverter.streamingServices.clientSpecificService;
 
 import com.khundadze.PlaylistConverter.dtos.PlaylistSearchDto;
+import com.khundadze.PlaylistConverter.dtos.ResultMusicDto;
+import com.khundadze.PlaylistConverter.dtos.TargetMusicDto;
 import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 import com.khundadze.PlaylistConverter.models.Music;
 import com.khundadze.PlaylistConverter.models.Playlist;
-import com.khundadze.PlaylistConverter.streamingServices.IMusicService;
+import com.khundadze.PlaylistConverter.services.MusicMapper;
+import com.khundadze.PlaylistConverter.streamingServices.MusicService;
+import lombok.AllArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+@AllArgsConstructor
 @Service
-public class YouTubeService implements IMusicService { // TODO:
+public class YouTubeService extends MusicService {
+
+    private final MusicMapper mapper;
 
     @Override
     public List<PlaylistSearchDto> getUsersPlaylists(String accessToken) {
@@ -65,63 +73,6 @@ public class YouTubeService implements IMusicService { // TODO:
         return playlists;
     }
 
-
-    @Override
-    public List<Music> getPlaylistsTracks(String accessToken, String playlistId) {
-        List<Music> tracks = new ArrayList<>();
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
-        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-
-        String pageToken = null;
-        do {
-            UriComponentsBuilder builder = UriComponentsBuilder
-                    .fromHttpUrl("https://www.googleapis.com/youtube/v3/playlistItems")
-                    .queryParam("part", "snippet,contentDetails")
-                    .queryParam("playlistId", playlistId)
-                    .queryParam("maxResults", 50);
-            if (pageToken != null) builder.queryParam("pageToken", pageToken);
-
-            ResponseEntity<Map> response = restTemplate.exchange(
-                    builder.toUriString(),
-                    HttpMethod.GET,
-                    entity,
-                    Map.class
-            );
-
-            Map<String, Object> body = response.getBody();
-            if (body == null) break;
-
-            List<Map<String, Object>> items = (List<Map<String, Object>>) body.get("items");
-            if (items != null) {
-                for (Map<String, Object> item : items) {
-                    Map<String, Object> snippet = (Map<String, Object>) item.get("snippet");
-                    if (snippet == null) continue;
-
-                    Map<String, Object> resourceId = (Map<String, Object>) snippet.get("resourceId");
-                    if (resourceId == null) continue;
-
-                    String videoId = resourceId.get("videoId").toString();
-                    String name = snippet.get("title").toString();
-
-                    Music music = Music.builder()
-                            .id(videoId)
-                            .name(name)
-                            .build();
-
-                    tracks.add(music);
-                }
-            }
-
-            pageToken = (String) body.get("nextPageToken");
-        } while (pageToken != null);
-
-        return tracks;
-    }
-
-
     @Override
     public Playlist createPlaylist(String accessToken, String playlistName, List<String> trackIds) {
         RestTemplate restTemplate = new RestTemplate();
@@ -170,6 +121,134 @@ public class YouTubeService implements IMusicService { // TODO:
                 .streamingPlatform(StreamingPlatform.YOUTUBE)
                 .musics(musics)
                 .build();
+    }
+
+
+    @Override
+    public List<TargetMusicDto> getPlaylistsTracks(String accessToken, String playlistId) {
+        List<TargetMusicDto> tracks = new ArrayList<>();
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        String pageToken = null;
+        do {
+            UriComponentsBuilder builder = UriComponentsBuilder
+                    .fromHttpUrl("https://www.googleapis.com/youtube/v3/playlistItems")
+                    .queryParam("part", "snippet,contentDetails")
+                    .queryParam("playlistId", playlistId)
+                    .queryParam("maxResults", 50);
+            if (pageToken != null) builder.queryParam("pageToken", pageToken);
+
+            ResponseEntity<Map> response = restTemplate.exchange(
+                    builder.toUriString(),
+                    HttpMethod.GET,
+                    entity,
+                    Map.class
+            );
+
+            Map<String, Object> body = response.getBody();
+            if (body == null) break;
+
+            List<Map<String, Object>> items = (List<Map<String, Object>>) body.get("items");
+            if (items != null) {
+                for (Map<String, Object> item : items) {
+                    Map<String, Object> snippet = (Map<String, Object>) item.get("snippet");
+                    if (snippet == null) continue;
+
+                    Map<String, Object> resourceId = (Map<String, Object>) snippet.get("resourceId");
+                    if (resourceId == null) continue;
+
+                    String videoId = resourceId.get("videoId").toString();
+                    String name = snippet.get("title").toString();
+                    String artist = snippet.getOrDefault("videoOwnerChannelTitle", "").toString();
+                    String description = snippet.getOrDefault("description", "").toString();
+                    if (description.length() > 450) {
+                        String prefix = description.substring(0, 300);
+                        String suffix = description.substring(description.length() - 150);
+                        description = prefix + " " + suffix;
+                    }
+                    List<String> descriptionKeywords = Arrays.stream(description.split("\\s+"))
+                            .filter(w -> !w.isBlank() && w.length() > 2)
+                            .map(String::toLowerCase)
+                            .toList();
+
+                    Music music = Music.builder()
+                            .id(videoId)
+                            .name(name)
+                            .artist(artist)
+                            .description(description)
+                            .build();
+
+                    tracks.add(mapper.toTargetMusicDto(music));
+                }
+            }
+
+            pageToken = (String) body.get("nextPageToken");
+        } while (pageToken != null);
+
+        return tracks;
+    }
+
+    @Override
+    public String findTrackId(String accessToken, TargetMusicDto target) {
+        if (target == null || target.name() == null) return null;
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        // Build query: include artist if available
+        String query = target.name();
+        if (target.artist() != null && !target.artist().isBlank()) {
+            query += " " + target.artist();
+        }
+
+        UriComponentsBuilder builder = UriComponentsBuilder
+                .fromHttpUrl("https://www.googleapis.com/youtube/v3/search")
+                .queryParam("part", "snippet")
+                .queryParam("q", query)
+                .queryParam("type", "video")
+                .queryParam("maxResults", 10);
+
+        ResponseEntity<Map> response = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                entity,
+                Map.class
+        );
+
+        Map<String, Object> body = response.getBody();
+        if (body == null) return null;
+
+        List<Map<String, Object>> items = (List<Map<String, Object>>) body.get("items");
+        if (items == null || items.isEmpty()) return null;
+
+        List<ResultMusicDto> results = new ArrayList<>();
+        for (Map<String, Object> item : items) {
+            Map<String, Object> snippet = (Map<String, Object>) item.get("snippet");
+            if (snippet == null) continue;
+
+            String videoId = ((Map<String, Object>) item.get("id")).get("videoId").toString();
+            String title = (String) snippet.get("title");
+            String channel = (String) snippet.get("channelTitle");
+            String description = (String) snippet.get("description");
+
+            Music music = Music.builder()
+                    .id(videoId)
+                    .name(title)
+                    .artist(channel)
+                    .description(description)
+                    .build();
+
+            results.add(mapper.toResultMusicDto(music));
+        }
+
+        return bestMatch(target, results).getId();
     }
 
 

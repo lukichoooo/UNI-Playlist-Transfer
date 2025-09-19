@@ -2,9 +2,9 @@ package com.khundadze.PlaylistConverter.streamingServices;
 
 import com.khundadze.PlaylistConverter.dtos.OAuthTokenResponseDto;
 import com.khundadze.PlaylistConverter.dtos.PlaylistSearchDto;
+import com.khundadze.PlaylistConverter.dtos.TargetMusicDto;
 import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 import com.khundadze.PlaylistConverter.exceptions.UserNotAuthorizedForStreamingPlatformException;
-import com.khundadze.PlaylistConverter.models.Music;
 import com.khundadze.PlaylistConverter.models.Playlist;
 import com.khundadze.PlaylistConverter.services.OAuthTokenService;
 import lombok.RequiredArgsConstructor;
@@ -30,22 +30,15 @@ public class MusicServiceManager {
 
     // ASC
     public List<PlaylistSearchDto> getUsersPlaylists(StreamingPlatform platform) {
-        IMusicService svc = registry.getService(platform);
+        MusicService svc = registry.getService(platform);
         String token = getTokenOrThrow(platform).accessToken();
         return svc.getUsersPlaylists(token).stream()
                 .sorted(Comparator.comparing(PlaylistSearchDto::name, String.CASE_INSENSITIVE_ORDER))
                 .toList();
     }
 
-
-    public List<Music> getPlaylistTracks(StreamingPlatform platform, String playlistId) {
-        IMusicService svc = registry.getService(platform);
-        String token = getTokenOrThrow(platform).accessToken();
-        return svc.getPlaylistsTracks(token, playlistId);
-    }
-
     public Playlist createPlaylist(StreamingPlatform platform, String playlistName, List<String> trackIds) {
-        IMusicService svc = registry.getService(platform);
+        MusicService svc = registry.getService(platform);
         String token = getTokenOrThrow(platform).accessToken();
         return svc.createPlaylist(token, playlistName, trackIds);
     }
@@ -58,22 +51,20 @@ public class MusicServiceManager {
             String newPlaylistName) {
 
         // Source service and token
-        IMusicService svcFrom = registry.getService(fromPlatform);
+        MusicService svcFrom = registry.getService(fromPlatform);
         String fromToken = getTokenOrThrow(fromPlatform).accessToken();
 
         // Target service and token
-        IMusicService svcTo = registry.getService(toPlatform);
+        MusicService svcTo = registry.getService(toPlatform);
         String toToken = getTokenOrThrow(toPlatform).accessToken();
 
         // Fetch tracks from source
-        List<Music> tracks = svcFrom.getPlaylistsTracks(fromToken, fromPlaylistId);
-        for (Music track : tracks) {
-            System.out.println(track.getName() + " - " + track.getId());
-        }
+        List<TargetMusicDto> fromTracks = svcFrom.getPlaylistsTracks(fromToken, fromPlaylistId);
 
-        // Extract track IDs
-        List<String> trackIds = tracks.stream()
-                .map(Music::getId)
+        // Find tracks in target platform and collect IDs
+        List<String> toTrackIds = fromTracks.stream()
+                .map(track -> svcTo.findTrackId(toToken, track))
+                .filter(id -> id != null && !id.isEmpty())
                 .toList();
 
         // Default playlist name if not provided
@@ -82,9 +73,7 @@ public class MusicServiceManager {
         }
 
         // Create playlist on target platform
-        Playlist playlist = svcTo.createPlaylist(toToken, newPlaylistName, trackIds);
-
-        return playlist;
+        return svcTo.createPlaylist(toToken, newPlaylistName, toTrackIds);
     }
 
 }

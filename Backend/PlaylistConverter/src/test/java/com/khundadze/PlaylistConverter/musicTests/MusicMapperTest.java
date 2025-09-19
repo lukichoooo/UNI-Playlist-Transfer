@@ -1,4 +1,4 @@
-package com.khundadze.PlaylistConverter;
+package com.khundadze.PlaylistConverter.musicTests;
 
 import com.khundadze.PlaylistConverter.dtos.ResultMusicDto;
 import com.khundadze.PlaylistConverter.dtos.TargetMusicDto;

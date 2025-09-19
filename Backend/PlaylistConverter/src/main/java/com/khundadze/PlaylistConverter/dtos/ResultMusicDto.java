@@ -1,4 +1,12 @@
 package com.khundadze.PlaylistConverter.dtos;
 
-public record ResultMusicDto() {
+import java.util.HashSet;
+
+public record ResultMusicDto(
+        String id,
+        String name,
+        String artist,
+        String album,
+        HashSet<String> keywordsLowSet
+) {
 }

@@ -10,8 +10,9 @@ import lombok.Data;
 public class Music {
 
     private String id;
-
     private String name;
     private String artist;
     private String album;
+    
+    private String description; // recieved from platform
 }

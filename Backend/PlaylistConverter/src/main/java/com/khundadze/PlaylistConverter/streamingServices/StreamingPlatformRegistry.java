@@ -19,7 +19,7 @@ public class StreamingPlatformRegistry { // TODO: add all streaming platforms se
     private final SoundCloudService soundCloudService;
 
 
-    private final Map<StreamingPlatform, IMusicService> serviceMap;
+    private final Map<StreamingPlatform, MusicService> serviceMap;
 
     public StreamingPlatformRegistry(SpotifyService spotifyService,
                                      YouTubeService youTubeService,
@@ -37,8 +37,8 @@ public class StreamingPlatformRegistry { // TODO: add all streaming platforms se
                 StreamingPlatform.YOUTUBEMUSIC, youTubemusicService);
     }
 
-    public IMusicService getService(StreamingPlatform platform) {
-        IMusicService svc = serviceMap.get(platform);
+    public MusicService getService(StreamingPlatform platform) {
+        MusicService svc = serviceMap.get(platform);
         if (svc == null) {
             throw new UnknownStreamingPlatformException("Unknown streaming platform: " + platform);
         }
