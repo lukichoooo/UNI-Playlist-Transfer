@@ -1,0 +1,228 @@
+package com.khundadze.PlaylistConverter.streamingServices;
+
+import com.khundadze.PlaylistConverter.dtos.ResultMusicDto;
+import com.khundadze.PlaylistConverter.dtos.TargetMusicDto;
+import com.khundadze.PlaylistConverter.models.Music;
+import org.apache.commons.text.similarity.FuzzyScore;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+@Service
+public class MusicMatcher {
+
+    // --- Scoring Constants ---
+    private final double ISRC_MATCH_BONUS = 3000.0;
+    private final double ARTIST_EXACT_MATCH_SCORE = 500.0;
+    private final double ARTIST_IN_KEYWORDS_SCORE = 250.0;
+    private final double ALBUM_EXACT_MATCH_SCORE = 300.0;
+    private final double ALBUM_IN_KEYWORDS_SCORE = 150.0;
+    private final double JACCARD_TITLE_WEIGHT = 400.0;
+    private final double FUZZY_TITLE_WEIGHT = 200.0;
+    private final double KEYWORD_OVERLAP_BONUS = 10.0;
+    private final double ARTIST_MISMATCH_PENALTY = -300.0;
+    private final double ALBUM_MISMATCH_PENALTY = -200.0;
+    private final double DURATION_EXACT_MATCH_SCORE = 600.0;
+    private final double DURATION_CLOSE_MATCH_SCORE = 200.0;
+    private final double DURATION_MISMATCH_PENALTY = -150.0;
+
+    // --- Thresholds ---
+    private final long DURATION_TOLERANCE_MS = 5000L; // 5 seconds for "close match"
+
+    private final FuzzyScore fuzzyScore = new FuzzyScore(Locale.ENGLISH);
+
+    public Music bestMatch(TargetMusicDto target, List<ResultMusicDto> results) {
+        if (results == null || results.isEmpty()) {
+            return null;
+        }
+
+        return results.stream()
+                .max(Comparator.comparingDouble(result -> calculateScore(target, result)))
+                .map(this::mapToMusic)
+                .orElse(null);
+    }
+
+    private double calculateScore(TargetMusicDto target, ResultMusicDto result) {
+        double score = 0.0;
+
+        Set<String> targetTitleTokens = tokenize(safeNormalize(target.name()));
+        Set<String> resultTitleTokens = tokenize(safeNormalize(result.name()));
+
+        score += getIsrcScore(target.isrc(), result.isrc());
+        score += getArtistScore(target, result);
+        score += getAlbumScore(target, result);
+        score += getTitleScore(target.name(), result.name(), targetTitleTokens, resultTitleTokens);
+        score += getDurationScore(target, result);
+        score += getKeywordBonus(target, result);
+
+        return score;
+    }
+
+    // --- Scoring Component Methods ---
+
+    private double getIsrcScore(String targetIsrc, String resultIsrc) {
+        if (targetIsrc != null && targetIsrc.equals(resultIsrc)) {
+            return ISRC_MATCH_BONUS;
+        }
+        return 0.0;
+    }
+
+    private double getArtistScore(TargetMusicDto target, ResultMusicDto result) {
+        String targetArtistNorm = safeNormalize(target.artist());
+        if (targetArtistNorm.isEmpty()) return 0.0;
+
+        String resultArtistNorm = safeNormalize(result.artist());
+
+        // Case 1: The result has an explicit artist name.
+        if (!resultArtistNorm.isEmpty()) {
+            if (resultArtistNorm.equals(targetArtistNorm)) {
+                return ARTIST_EXACT_MATCH_SCORE;
+            } else {
+                return ARTIST_MISMATCH_PENALTY; // It's a different artist, penalize heavily.
+            }
+        }
+
+        // Case 2: The result's artist field is null/empty. Don't penalize.
+        // Fallback to searching keywords.
+        for (String keyword : result.keywordsLowSet()) {
+            if (keyword.contains(targetArtistNorm)) {
+                return ARTIST_IN_KEYWORDS_SCORE;
+            }
+        }
+
+        return 0.0;
+    }
+
+    private double getAlbumScore(TargetMusicDto target, ResultMusicDto result) {
+        String targetAlbumNorm = safeNormalize(target.album());
+        if (targetAlbumNorm.isEmpty()) return 0.0;
+
+        String resultAlbumNorm = safeNormalize(result.album());
+
+        // Case 1: The result has an explicit album name.
+        if (!resultAlbumNorm.isEmpty()) {
+            if (resultAlbumNorm.equals(targetAlbumNorm)) {
+                return ALBUM_EXACT_MATCH_SCORE; // Exact match.
+            } else {
+                return ALBUM_MISMATCH_PENALTY; // Mismatched album, penalize.
+            }
+        }
+
+        // Case 2: The result's album field is null/empty.
+        // Fallback to searching keywords.
+        for (String keyword : result.keywordsLowSet()) {
+            if (keyword.contains(targetAlbumNorm)) {
+                return ALBUM_IN_KEYWORDS_SCORE;
+            }
+        }
+
+        return 0.0;
+    }
+
+    private double getTitleScore(String targetName, String resultName, Set<String> targetTokens, Set<String> resultTokens) {
+        if (targetName == null || resultName == null) return 0.0;
+
+        double score = 0.0;
+        score += JACCARD_TITLE_WEIGHT * jaccard(targetTokens, resultTokens);
+
+        int maxLength = Math.max(targetName.length(), resultName.length());
+        if (maxLength > 0) {
+            score += FUZZY_TITLE_WEIGHT * (double) fuzzyScore.fuzzyScore(targetName, resultName) / maxLength;
+        }
+        return score;
+    }
+
+    private double getDurationScore(TargetMusicDto target, ResultMusicDto result) {
+        Integer targetDuration = parseDuration(target.duration());
+        Integer resultDuration = parseDuration(result.duration());
+
+        // If duration isn't available for comparison, no score change.
+        if (targetDuration == null || resultDuration == null || targetDuration <= 0 || resultDuration <= 0) {
+            return 0.0;
+        }
+
+        long diff = Math.abs((long) targetDuration - (long) resultDuration);
+
+        if (diff == 0) {
+            return DURATION_EXACT_MATCH_SCORE;
+        }
+        if (diff <= DURATION_TOLERANCE_MS) {
+            return DURATION_CLOSE_MATCH_SCORE;
+        }
+        return DURATION_MISMATCH_PENALTY;
+    }
+
+    private double getKeywordBonus(TargetMusicDto target, ResultMusicDto result) {
+        double bonus = 0.0;
+        Set<String> resultKeywords = result.keywordsLowSet();
+        if (resultKeywords == null || resultKeywords.isEmpty()) return 0.0;
+
+        for (String keyword : target.keywordsLowList()) {
+            if (resultKeywords.contains(keyword)) {
+                bonus += KEYWORD_OVERLAP_BONUS;
+            }
+        }
+        return bonus;
+    }
+
+
+    // --- Helper & Utility Methods ---
+
+    private Integer parseDuration(String durationStr) {
+        if (durationStr == null || durationStr.isBlank()) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(durationStr.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private String safeNormalize(String s) {
+        if (s == null || s.isBlank()) {
+            return "";
+        }
+        return s.toLowerCase()
+                .replaceAll("\\(.*?\\)", "")
+                .replaceAll("\\[.*?\\]", "")
+                .replaceAll("(feat\\.|ft\\.|official video|remastered)", "")
+                .replaceAll("[^a-z0-9 ]", " ")
+                .replaceAll("\\s+", " ")
+                .trim();
+    }
+
+    private Set<String> tokenize(String normalizedString) {
+        if (normalizedString.isEmpty()) {
+            return Collections.emptySet();
+        }
+        return Arrays.stream(normalizedString.split(" "))
+                .filter(t -> !t.isBlank())
+                .collect(Collectors.toSet());
+    }
+
+    private double jaccard(Set<String> a, Set<String> b) {
+        if (a.isEmpty() || b.isEmpty()) return 0.0;
+        Set<String> intersection = new HashSet<>(a);
+        intersection.retainAll(b);
+
+        Set<String> union = new HashSet<>(a);
+        union.addAll(b);
+
+        if (union.isEmpty()) return 0.0;
+        return (double) intersection.size() / union.size();
+    }
+
+    private Music mapToMusic(ResultMusicDto best) {
+        return Music.builder()
+                .id(best.id())
+                .name(best.name())
+                .artist(best.artist())
+                .album(best.album())
+                .isrc(best.isrc())
+                .duration(best.duration())
+                .description(null)
+                .build();
+    }
+}

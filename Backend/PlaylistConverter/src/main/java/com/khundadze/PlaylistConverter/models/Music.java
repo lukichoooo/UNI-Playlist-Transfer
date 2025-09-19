@@ -13,6 +13,8 @@ public class Music {
     private String name;
     private String artist;
     private String album;
-    
+    private String isrc;
+    private String duration;
+
     private String description; // recieved from platform
 }

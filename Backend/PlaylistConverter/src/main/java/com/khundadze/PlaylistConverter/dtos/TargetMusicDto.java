@@ -7,6 +7,8 @@ public record TargetMusicDto(
         String name,
         String artist,
         String album,
+        String isrc,
+        String duration,
         List<String> keywordsLowList
 ) {
 }

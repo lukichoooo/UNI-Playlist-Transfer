@@ -7,6 +7,9 @@ public record ResultMusicDto(
         String name,
         String artist,
         String album,
+        String isrc,
+        String duration,
+
         HashSet<String> keywordsLowSet
 ) {
 }

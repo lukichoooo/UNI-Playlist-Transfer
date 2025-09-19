@@ -7,11 +7,12 @@ import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 import com.khundadze.PlaylistConverter.models.Music;
 import com.khundadze.PlaylistConverter.models.Playlist;
 import com.khundadze.PlaylistConverter.services.MusicMapper;
+import com.khundadze.PlaylistConverter.streamingServices.MusicMatcher;
 import com.khundadze.PlaylistConverter.streamingServices.MusicService;
-import lombok.AllArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
@@ -19,11 +20,21 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-@AllArgsConstructor
 @Service
 public class YouTubeService extends MusicService {
 
-    private final MusicMapper mapper;
+    public YouTubeService(MusicMatcher matcher, MusicMapper mapper, WebClient webClient) {
+        super(matcher, mapper, webClient);
+    }
+
+    private final String API_BASE = "https://api.soundcloud.com";
+
+    private HttpHeaders buildAuthHeaders(String accessToken) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return headers;
+    }
 
     @Override
     public List<PlaylistSearchDto> getUsersPlaylists(String accessToken) {
@@ -248,7 +259,7 @@ public class YouTubeService extends MusicService {
             results.add(mapper.toResultMusicDto(music));
         }
 
-        return bestMatch(target, results).getId();
+        return matcher.bestMatch(target, results).getId();
     }
 
 

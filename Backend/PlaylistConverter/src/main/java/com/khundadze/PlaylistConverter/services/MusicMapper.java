@@ -26,6 +26,8 @@ public class MusicMapper {
                 music.getName(),
                 music.getArtist(),
                 music.getAlbum(),
+                music.getIsrc(),
+                music.getDuration(),
                 keywords
         );
     }
@@ -43,6 +45,8 @@ public class MusicMapper {
                 music.getName(),
                 music.getArtist(),
                 music.getAlbum(),
+                music.getIsrc(),
+                music.getDuration(),
                 keywords
         );
     }
