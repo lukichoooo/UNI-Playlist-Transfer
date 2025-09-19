@@ -9,6 +9,7 @@ import com.khundadze.PlaylistConverter.models.Playlist;
 import com.khundadze.PlaylistConverter.services.MusicMapper;
 import com.khundadze.PlaylistConverter.streamingServices.MusicMatcher;
 import com.khundadze.PlaylistConverter.streamingServices.MusicService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -23,11 +24,15 @@ import java.util.Map;
 @Service
 public class YouTubeService extends MusicService {
 
-    public YouTubeService(MusicMatcher matcher, MusicMapper mapper, WebClient webClient) {
+    public YouTubeService(
+            @Qualifier("youTubeWebClient") WebClient webClient,
+            MusicMatcher matcher,
+            MusicMapper mapper
+    ) {
         super(matcher, mapper, webClient);
     }
 
-    private final String API_BASE = "https://api.soundcloud.com";
+    // TODO: implement webwalk simlar to soundloud
 
     private HttpHeaders buildAuthHeaders(String accessToken) {
         HttpHeaders headers = new HttpHeaders();

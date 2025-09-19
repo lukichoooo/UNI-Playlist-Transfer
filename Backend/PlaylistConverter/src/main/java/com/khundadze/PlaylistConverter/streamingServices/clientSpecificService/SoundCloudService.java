@@ -1,6 +1,7 @@
 package com.khundadze.PlaylistConverter.streamingServices.clientSpecificService;
 
 import com.khundadze.PlaylistConverter.dtos.PlaylistSearchDto;
+import com.khundadze.PlaylistConverter.dtos.ResultMusicDto;
 import com.khundadze.PlaylistConverter.dtos.TargetMusicDto;
 import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 import com.khundadze.PlaylistConverter.models.Music;
@@ -8,6 +9,7 @@ import com.khundadze.PlaylistConverter.models.Playlist;
 import com.khundadze.PlaylistConverter.services.MusicMapper;
 import com.khundadze.PlaylistConverter.streamingServices.MusicMatcher;
 import com.khundadze.PlaylistConverter.streamingServices.MusicService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -21,9 +23,14 @@ import java.util.Map;
 @Service
 public class SoundCloudService extends MusicService {
 
-    public SoundCloudService(MusicMatcher matcher, MusicMapper mapper, WebClient webClient) {
+    public SoundCloudService(
+            @Qualifier("soundCloudWebClient") WebClient webClient,
+            MusicMatcher matcher,
+            MusicMapper mapper
+    ) {
         super(matcher, mapper, webClient);
     }
+
 
     private final String API_BASE = "https://api.soundcloud.com";
 
@@ -91,12 +98,29 @@ public class SoundCloudService extends MusicService {
                 for (Map<String, Object> track : items) {
                     String id = String.valueOf(track.get("id"));
                     String title = (String) track.get("title");
-                    String artist = (String) track.get("user");
-                    String album = (String) track.get("playlist");
+
+                    // handle nested "user" object
+                    Map<String, Object> userMap = (Map<String, Object>) track.get("user");
+                    String artist = userMap != null ? (String) userMap.get("username") : null;
+
+                    // handle nested "playlist" object
+                    Map<String, Object> playlistMap = (Map<String, Object>) track.get("playlist");
+                    String album = playlistMap != null ? (String) playlistMap.get("title") : null;
+
                     String isrc = (String) track.get("track_code");
-                    String duration = (String) track.get("duration");
+                    String duration = track.get("duration") != null ? String.valueOf(track.get("duration")) : null;
                     String description = (String) track.get("description");
-                    tracks.add(new TargetMusicDto(id, title, null, null, null, null, null));
+
+                    Music music = Music.builder()
+                            .id(id)
+                            .name(title)
+                            .artist(artist)
+                            .album(album)
+                            .isrc(isrc)
+                            .duration(duration)
+                            .description(description)
+                            .build();
+                    tracks.add(mapper.toTargetMusicDto(music));
                 }
             }
         }
@@ -116,20 +140,35 @@ public class SoundCloudService extends MusicService {
         List<Map<String, Object>> response = get(query, accessToken, List.class);
         if (response == null) return null;
 
+        List<ResultMusicDto> results = new ArrayList<>();
         for (Map<String, Object> track : response) {
+            String id = String.valueOf(track.get("id"));
             String title = (String) track.get("title");
-            String artist = track.get("user") != null
-                    ? (String) ((Map<String, Object>) track.get("user")).get("username")
-                    : null;
 
-            // Simple matching: title and optionally artist
-            if (title != null && title.equalsIgnoreCase(target.name())) {
-                if (target.artist() == null || (artist != null && artist.equalsIgnoreCase(target.artist()))) {
-                    return String.valueOf(track.get("id"));
-                }
-            }
+            // handle nested "user" object
+            Map<String, Object> userMap = (Map<String, Object>) track.get("user");
+            String artist = userMap != null ? (String) userMap.get("username") : null;
+
+            // handle nested "playlist" object
+            Map<String, Object> playlistMap = (Map<String, Object>) track.get("playlist");
+            String album = playlistMap != null ? (String) playlistMap.get("title") : null;
+
+            String isrc = (String) track.get("track_code");
+            String duration = track.get("duration") != null ? String.valueOf(track.get("duration")) : null;
+            String description = (String) track.get("description");
+
+            Music music = Music.builder()
+                    .id(id)
+                    .name(title)
+                    .artist(artist)
+                    .album(album)
+                    .isrc(isrc)
+                    .duration(duration)
+                    .description(description)
+                    .build();
+            results.add(mapper.toResultMusicDto(music));
         }
-        return null; // not found
+        return matcher.bestMatch(target, results).getId(); // not found
     }
 
 
