@@ -43,7 +43,6 @@ public class MusicServiceManager {
         return svc.createPlaylist(token, playlistName, trackIds);
     }
 
-    // TODO: main method of the whole app
     public Playlist transferPlaylist(
             StreamingPlatform fromPlatform,
             StreamingPlatform toPlatform,

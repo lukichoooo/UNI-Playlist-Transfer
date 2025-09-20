@@ -10,8 +10,6 @@ import com.khundadze.PlaylistConverter.services.MusicMapper;
 import com.khundadze.PlaylistConverter.streamingServices.MusicMatcher;
 import com.khundadze.PlaylistConverter.streamingServices.MusicService;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -34,16 +32,9 @@ public class SoundCloudService extends MusicService {
 
     private final String API_BASE = "https://api.soundcloud.com";
 
-    private HttpHeaders buildAuthHeaders(String accessToken) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        return headers;
-    }
-
     @Override
     public List<PlaylistSearchDto> getUsersPlaylists(String accessToken) {
-        List<Map<String, Object>> response = get(API_BASE + "/me/playlists", accessToken, List.class);
+        List<Map<String, Object>> response = getRequest(API_BASE + "/me/playlists", accessToken, List.class);
         List<PlaylistSearchDto> playlists = new ArrayList<>();
 
         if (response != null) {
@@ -69,7 +60,7 @@ public class SoundCloudService extends MusicService {
                 )
         );
 
-        Map<String, Object> response = post(url, accessToken, body, Map.class);
+        Map<String, Object> response = postRequest(url, accessToken, body, Map.class);
         if (response == null || !response.containsKey("id")) {
             throw new RuntimeException("Failed to create playlist on SoundCloud");
         }
@@ -89,7 +80,7 @@ public class SoundCloudService extends MusicService {
 
     @Override
     public List<TargetMusicDto> getPlaylistsTracks(String accessToken, String playlistId) {
-        Map<String, Object> response = get(API_BASE + "/playlists/" + playlistId, accessToken, Map.class);
+        Map<String, Object> response = getRequest(API_BASE + "/playlists/" + playlistId, accessToken, Map.class);
         List<TargetMusicDto> tracks = new ArrayList<>();
 
         if (response != null) {
@@ -134,10 +125,10 @@ public class SoundCloudService extends MusicService {
         String query = UriComponentsBuilder
                 .fromHttpUrl(API_BASE + "/tracks")
                 .queryParam("q", target.name())
-                .queryParam("limit", 10)
+                .queryParam("limit", 50)
                 .build().toUriString();
 
-        List<Map<String, Object>> response = get(query, accessToken, List.class);
+        List<Map<String, Object>> response = getRequest(query, accessToken, List.class);
         if (response == null) return null;
 
         List<ResultMusicDto> results = new ArrayList<>();
@@ -168,7 +159,9 @@ public class SoundCloudService extends MusicService {
                     .build();
             results.add(mapper.toResultMusicDto(music));
         }
-        return matcher.bestMatch(target, results).getId(); // not found
+        Music bestMatch = matcher.bestMatch(target, results);
+        System.out.println("Found song: " + ((bestMatch != null) ? bestMatch.getName() : null));
+        return (bestMatch != null) ? bestMatch.getId() : null;
     }
 
 

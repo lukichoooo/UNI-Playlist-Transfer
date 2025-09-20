@@ -16,7 +16,7 @@ public abstract class MusicService {
     protected final MusicMapper mapper;
     protected final WebClient webClient;
 
-    protected <T> T get(String uri, String accessToken, Class<T> clazz) {
+    protected <T> T getRequest(String uri, String accessToken, Class<T> clazz) {
         return webClient.get()
                 .uri(uri)
                 .headers(h -> h.setBearerAuth(accessToken))
@@ -25,7 +25,7 @@ public abstract class MusicService {
                 .block(); // synchronous style
     }
 
-    protected <T> T post(String uri, String accessToken, Object body, Class<T> clazz) {
+    protected <T> T postRequest(String uri, String accessToken, Object body, Class<T> clazz) {
         return webClient.post()
                 .uri(uri)
                 .headers(h -> h.setBearerAuth(accessToken))
