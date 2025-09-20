@@ -32,9 +32,6 @@ public class YouTubeService extends MusicService {
 
     private final String API_BASE = "https://www.googleapis.com/youtube/v3";
 
-    // TODO: implement webwalk simlar to soundloud
-
-
     @Override
     public List<PlaylistSearchDto> getUsersPlaylists(String accessToken) {
         String url = UriComponentsBuilder

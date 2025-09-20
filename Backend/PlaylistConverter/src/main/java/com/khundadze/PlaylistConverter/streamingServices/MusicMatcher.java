@@ -28,7 +28,6 @@ public class MusicMatcher {
     private final double DURATION_MISMATCH_PENALTY = -150.0;
     private final double DURATION_LESS_THAN_MIN_DURATION_MS = -800.0;
 
-    // --- NEW ---: Bonus for official music indicators
     private final double MUSIC_INDICATOR_BONUS = 600.0;
     private static final Set<String> MUSIC_INDICATORS = Set.of(
             "provided to youtube by",
@@ -183,17 +182,12 @@ public class MusicMatcher {
         return bonus;
     }
 
-    /**
-     * Checks for keywords in the title or description that strongly indicate the result
-     * is an official music track (e.g., auto-generated content).
-     */
     private double getMusicIndicatorBonus(ResultMusicDto result) {
-        double score = 0.0;
         for (String indicator : MUSIC_INDICATORS) {
             if (result.keywordsLowSet().contains(indicator) || result.name().contains(indicator))
-                score += MUSIC_INDICATOR_BONUS;
+                return MUSIC_INDICATOR_BONUS;
         }
-        return score;
+        return 0.0;
     }
 
     // --- Helper & Utility Methods ---

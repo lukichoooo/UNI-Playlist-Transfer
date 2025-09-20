@@ -78,7 +78,7 @@ public class SoundCloudService extends MusicService {
                 .build();
     }
 
-    @Override
+    @Override // TODO: fetches less tracks than in playlist sometimes
     public List<TargetMusicDto> getPlaylistsTracks(String accessToken, String playlistId) {
         Map<String, Object> response = getRequest(API_BASE + "/playlists/" + playlistId, accessToken, Map.class);
         List<TargetMusicDto> tracks = new ArrayList<>();

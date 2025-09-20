@@ -44,6 +44,7 @@ public class SecurityConfig {
                         .requestMatchers("/home", "/error", "/api/auth/**").permitAll()
                         .requestMatchers("/api/platformAuth/**").permitAll()
                         .requestMatchers("/api/converter/**").permitAll() // any user can transfer playlist :3
+                        .requestMatchers("/ws/**").permitAll() // Allow WebSocket connections
                         .anyRequest().authenticated())
                 // OAuth2 login (used for Google/GitHub) AND streaming OAuth
                 .oauth2Login(oauth2 -> oauth2

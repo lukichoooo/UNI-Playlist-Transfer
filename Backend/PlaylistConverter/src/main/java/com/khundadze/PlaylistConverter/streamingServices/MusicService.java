@@ -39,16 +39,9 @@ public abstract class MusicService {
     public abstract List<PlaylistSearchDto> getUsersPlaylists(String accessToken);
 
     public abstract List<TargetMusicDto> getPlaylistsTracks(String accessToken, String playlistId);
-    // build the music object
-    // MAX_DESCRIPTION_LENGTH = starting with 300 + ending with 150
-    // store description as list of words
 
     public abstract Playlist createPlaylist(String accessToken, String playlistName, List<String> trackIds);
 
     public abstract String findTrackId(String accessToken, TargetMusicDto target);
-    // must search with, name + artist  OR  name + album
-    // if any of musics fields are null, search for them in description
-    // store every word of that description in musics hashset "descriptionKeywords" (lowercase words)
-    // now compare every word in targetsDescription with every word in keywords
 
 }

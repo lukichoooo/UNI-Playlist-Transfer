@@ -8,18 +8,13 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Handles mapping between OAuth2 state UUIDs and user IDs or temporary tokens.
- * Supports TTL-based expiration for temporary tokens.
- */
 @Component
 public class StateManager { // TODO: replace with Redis
 
     private final Map<String, Long> stateToUserId = new ConcurrentHashMap<>();
     private final Map<String, TimedToken> tempTokens = new ConcurrentHashMap<>();
     private final Map<String, String> stateToCodeVerifier = new ConcurrentHashMap<>();
-
-
+    private final Map<String, String> transferState = new ConcurrentHashMap<>();
     private final long TEMP_TOKEN_TTL_SECONDS = 30 * 60; // 30 minutes
 
     // --- State generation ---

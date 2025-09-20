@@ -1,0 +1,95 @@
+/* An overlay to dim the background and center the progress component */
+.progress-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* The main container for the progress indicator. Fixed width prevents resizing. */
+.progress-container {
+    width: 400px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.progress-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Key styles for stability: 
+  - white-space: nowrap       -> Prevents text from wrapping to a new line.
+  - overflow: hidden          -> Hides any text that goes beyond the element's width.
+  - text-overflow: ellipsis   -> Adds "..." to indicate that text has been cut.
+  - min-height               -> Prevents the container from collapsing when the message is empty.
+*/
+.progress-message {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 1.2em;
+    /* Roughly one line of text height */
+}
+
+/* Styling the progress bar element */
+.progress-bar {
+    width: 100%;
+    height: 12px;
+    border: none;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+/* Background of the progress bar for Webkit browsers (Chrome, Safari) */
+.progress-bar::-webkit-progress-bar {
+    background-color: #e9ecef;
+    border-radius: 6px;
+}
+
+/* The actual progress value for Webkit browsers */
+.progress-bar::-webkit-progress-value {
+    background-color: #007bff;
+    border-radius: 6px;
+    transition: width 0.2s ease-in-out;
+}
+
+/* Fallback for Firefox */
+.progress-bar::-moz-progress-bar {
+    background-color: #007bff;
+    border-radius: 6px;
+}
+
+/* Container for percentage and count, using flexbox for alignment */
+.progress-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #495057;
+}
+
+.progress-percentage {
+    font-weight: 500;
+}
+
+.progress-count {
+    font-family: monospace;
+    /* Gives numbers a consistent width */
+}

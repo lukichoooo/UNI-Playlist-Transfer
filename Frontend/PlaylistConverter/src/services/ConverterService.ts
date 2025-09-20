@@ -88,16 +88,34 @@ class ConverterService
         }
     }
 
+    getTransferState = async (): Promise<string> =>
+    {
+        try
+        {
+            const response = await axios.get(`${BASE_URL}/transferState`, {
+                headers: this.getAuthHeader(),
+            });
+            return response.data;
+        } catch (err)
+        {
+            console.error("Failed to fetch transfer state:", err);
+            return "IDLE";
+        }
+    }
+
+
     transferPlaylist = async (
+        transferState: string,
         fromPlatform: StreamingPlatform,
         toPlatform: StreamingPlatform,
         fromPlaylistId: string,
         newPlaylistName: string
-    ): Promise<void> =>
+    ): Promise<void> => 
     {
         try
         {
             await axios.post(`${BASE_URL}/convert`, {
+                transferState,
                 fromPlatform,
                 toPlatform,
                 fromPlaylistId,

@@ -4,6 +4,7 @@ import "./PlaylistDetailsStep.css";
 import { converterService, type StreamingPlatform } from "../../services/ConverterService";
 import { PlaylistDropdown } from "./PlaylistDropdown";
 import type { PlaylistSearchDto } from "../../types";
+import TransferProgress from "../Progress Bar/TransferProgress";
 
 
 type PlaylistDetailsStepProps = {
@@ -32,6 +33,10 @@ export default function PlaylistDetailsStep({
 
     const isFromAuthenticated = fromService ? authenticatedServices.includes(fromService) : false;
     const isToAuthenticated = toService ? authenticatedServices.includes(toService) : false;
+    const [isTransferring, setIsTransferring] = useState(false);
+
+    const [transferState, setTransferState] = useState<string>("IDLE");
+
 
     useEffect(() =>
     {
@@ -51,15 +56,33 @@ export default function PlaylistDetailsStep({
     {
         if (!fromService || !toService || !isFromAuthenticated || !isToAuthenticated || !selectedPlaylist) return;
 
-        await converterService.transferPlaylist(
+        const transferState = await converterService.getTransferState();
+        if (!transferState) return;
+
+        setTransferState(transferState);
+        setIsTransferring(true);
+
+        // Fire-and-forget: don't await
+        converterService.transferPlaylist(
+            transferState,
             fromService as StreamingPlatform,
             toService as StreamingPlatform,
             selectedPlaylist.id,
             playlistName
-        );
-        alert("Playlist transferred successfully!");
-
+        ).catch(err =>
+        {
+            console.error("Transfer failed:", err);
+            alert("Playlist transfer failed!");
+        });
     };
+
+    const handleTransferComplete = () =>
+    {
+        console.log("Transfer finished, closing overlay.");
+        setIsTransferring(false);
+        setTransferState("IDLE");
+    };
+
 
     const handleAuthenticate = async (platform: string) =>
     {
@@ -143,6 +166,12 @@ export default function PlaylistDetailsStep({
                     onChange={(e) => setPlaylistName(e.target.value)}
                 />
             </div>
+
+            <TransferProgress
+                show={isTransferring}
+                transferState={transferState}
+                onComplete={handleTransferComplete}
+            />
 
             {/* Buttons */}
             <div className="details-buttons">
