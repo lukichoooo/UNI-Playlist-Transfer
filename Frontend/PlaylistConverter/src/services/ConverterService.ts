@@ -1,5 +1,5 @@
 // src/services/ConverterService.ts
-import axios from "axios";
+import api from "./api";
 import { authService } from "./authService";
 import { openOAuthPopup } from "./oauthHelper";
 import type { PlaylistSearchDto } from "../types";
@@ -61,7 +61,7 @@ class ConverterService
     {
         try
         {
-            const response = await axios.get(`${BASE_URL}/authenticatedPlatforms`, {
+            const response = await api.get(`${BASE_URL}/authenticatedPlatforms`, {
                 headers: this.getAuthHeader(),
             });
             return response.data;
@@ -76,7 +76,7 @@ class ConverterService
     {
         try
         {
-            const response = await axios.get(`${BASE_URL}/playlists`, {
+            const response = await api.get(`${BASE_URL}/playlists`, {
                 headers: this.getAuthHeader(),
                 params: { platform },
             });
@@ -92,7 +92,7 @@ class ConverterService
     {
         try
         {
-            const response = await axios.get(`${BASE_URL}/transferState`, {
+            const response = await api.get(`${BASE_URL}/transferState`, {
                 headers: this.getAuthHeader(),
             });
             return response.data;
@@ -114,7 +114,7 @@ class ConverterService
     {
         try
         {
-            await axios.post(`${BASE_URL}/convert`, {
+            await api.post(`${BASE_URL}/convert`, {
                 transferState,
                 fromPlatform,
                 toPlatform,

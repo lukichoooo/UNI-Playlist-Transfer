@@ -1,5 +1,5 @@
 // src/services/authService.ts
-import axios from "axios";
+import api from "./api";
 import { jwtDecode } from "jwt-decode";
 
 import { openOAuthPopup } from "./oauthHelper";
@@ -20,7 +20,7 @@ class AuthService
 
     login = async (username: string, password: string): Promise<string> =>
     {
-        const response = await axios.post(`${BASE_URL}/login`, { username, password });
+        const response = await api.post(`${BASE_URL}/login`, { username, password });
         const token = response.data.token;
         this.saveToken(token);
         return token;
@@ -28,7 +28,7 @@ class AuthService
 
     register = async (username: string, password: string): Promise<string> =>
     {
-        const response = await axios.post(`${BASE_URL}/register`, { username, password });
+        const response = await api.post(`${BASE_URL}/register`, { username, password });
         const token = response.data.token;
         this.saveToken(token);
         return token;
