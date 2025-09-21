@@ -21,7 +21,7 @@ export default function App()
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/oauth-success" element={<OAuthSuccessPage />} />
-        <Route path="/platform-auth-success" element={<PlatformAuthSuccessPage />} /> {/* <-- Add new route */}
+        <Route path="/platform-auth-success" element={<PlatformAuthSuccessPage />} />
 
         {/* public */}
         <Route element={<NavBarWrapper />}>
@@ -40,7 +40,8 @@ export default function App()
             path="*"
             element={
               <div className="container">
-                <h2>Not found</h2>
+                <p>ERROR 404</p>
+                <p>Page Not found</p>
               </div>
             }
           />

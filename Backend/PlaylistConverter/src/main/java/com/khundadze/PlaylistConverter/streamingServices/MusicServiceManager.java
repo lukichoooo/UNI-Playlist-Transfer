@@ -64,17 +64,27 @@ public class MusicServiceManager {
 
         // Fetch tracks from source
         List<TargetMusicDto> fromTracks = svcFrom.getPlaylistsTracks(fromToken, fromPlaylistId);
-
         AtomicInteger trackCount = new AtomicInteger();
-        // Find tracks in target platform and collect IDs
-        List<String> toTrackIds = fromTracks.stream()
-                .map(track -> {
-                    String trackId = svcTo.findTrackId(toToken, track, fromPlatform);
-                    logToFrontend(transferState, track, trackId, trackCount.incrementAndGet(), fromTracks.size());
-                    return trackId;
-                })
-                .filter(id -> id != null && !id.isEmpty())
-                .toList();
+
+        List<String> toTrackIds;
+        if (fromPlatform == toPlatform) {
+            toTrackIds = fromTracks.stream()
+                    .map(track -> {
+                        logToFrontend(transferState, track, track.id(), trackCount.incrementAndGet(), fromTracks.size());
+                        return track.id();
+                    })
+                    .toList();
+        } else {
+            // Find tracks in target platform and collect IDs
+            toTrackIds = fromTracks.stream()
+                    .map(track -> {
+                        String trackId = svcTo.findTrackId(toToken, track, fromPlatform);
+                        logToFrontend(transferState, track, trackId, trackCount.incrementAndGet(), fromTracks.size());
+                        return trackId;
+                    })
+                    .filter(id -> id != null && !id.isEmpty())
+                    .toList();
+        }
 
         // Default playlist name if not provided
         if (newPlaylistName == null || newPlaylistName.isEmpty()) {
