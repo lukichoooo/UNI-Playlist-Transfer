@@ -37,4 +37,17 @@ public class PlatformQueryRegistry {
         return trackName.trim();
     }
 
+    private String generateDeezerQuery(TargetMusicDto target) {
+        String artistName = normalizer.normalizeForQuery(target.artist());
+        String trackName = normalizer.normalizeForQuery(target.name());
+        String albumName = normalizer.normalizeForQuery(target.album());
+
+        // Use advanced search if artist and/or album are present
+        if (!artistName.isEmpty() && !trackName.isEmpty()) {
+            return "artist:\"" + artistName + "\" track:\"" + trackName + "\"";
+        } else if (!trackName.isEmpty()) {
+            return "track:\"" + trackName + "\"";
+        }
+        return trackName.trim();
+    }
 }

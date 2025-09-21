@@ -2,10 +2,7 @@ package com.khundadze.PlaylistConverter.streamingServices;
 
 import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 import com.khundadze.PlaylistConverter.exceptions.UnknownStreamingPlatformException;
-import com.khundadze.PlaylistConverter.streamingServices.clientSpecificService.SoundCloudService;
-import com.khundadze.PlaylistConverter.streamingServices.clientSpecificService.SpotifyService;
-import com.khundadze.PlaylistConverter.streamingServices.clientSpecificService.YouTubeService;
-import com.khundadze.PlaylistConverter.streamingServices.clientSpecificService.YouTubemusicService;
+import com.khundadze.PlaylistConverter.streamingServices.clientSpecificService.*;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -17,6 +14,7 @@ public class StreamingPlatformRegistry { // TODO: add all streaming platforms se
     private final YouTubeService youTubeService;
     private final YouTubemusicService youTubemusicService;
     private final SoundCloudService soundCloudService;
+    private final DeezerService deezerService;
 
 
     private final Map<StreamingPlatform, MusicService> serviceMap;
@@ -24,17 +22,21 @@ public class StreamingPlatformRegistry { // TODO: add all streaming platforms se
     public StreamingPlatformRegistry(SpotifyService spotifyService,
                                      YouTubeService youTubeService,
                                      SoundCloudService soundCloudService,
-                                     YouTubemusicService youTubemusicService) {
+                                     YouTubemusicService youTubemusicService,
+                                     DeezerService deezerService) {
         this.spotifyService = spotifyService;
         this.youTubeService = youTubeService;
         this.soundCloudService = soundCloudService;
         this.youTubemusicService = youTubemusicService;
+        this.deezerService = deezerService;
 
         this.serviceMap = Map.of(
                 StreamingPlatform.SPOTIFY, spotifyService,
                 StreamingPlatform.YOUTUBE, youTubeService,
                 StreamingPlatform.SOUNDCLOUD, soundCloudService,
-                StreamingPlatform.YOUTUBEMUSIC, youTubemusicService);
+                StreamingPlatform.YOUTUBEMUSIC, youTubemusicService,
+                StreamingPlatform.DEEZER, deezerService);
+
     }
 
     public MusicService getService(StreamingPlatform platform) {

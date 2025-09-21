@@ -33,4 +33,10 @@ public class WebClientConfig {
                 .build();
     }
 
+    @Bean
+    public WebClient deezerWebClient(WebClient.Builder builder) {
+        return builder
+                .baseUrl("https://api.deezer.com")
+                .build();
+    }
 }
