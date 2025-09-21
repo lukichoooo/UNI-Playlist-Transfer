@@ -26,11 +26,11 @@ export default function App()
         {/* public */}
         <Route element={<NavBarWrapper />}>
           <Route path="/" element={<HomePage />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/about" element={<AboutPage />} />
 
           {/* private */}
           <Route element={<PrivatePageWrapper />}>
-            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/profile" element={<Profile />} />
           </Route>

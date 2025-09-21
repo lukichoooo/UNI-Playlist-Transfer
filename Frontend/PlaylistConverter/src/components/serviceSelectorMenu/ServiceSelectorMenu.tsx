@@ -3,12 +3,17 @@ import ServiceSelectionStep from "./ServiceSelectionStep";
 import PlaylistDetailsStep from "./PlaylistDetailsStep";
 import "./ServiceSelectorMenu.css";
 import { converterService } from "../../services/ConverterService";
+import { useLocation } from "react-router-dom"; // Import useLocation
 
 const MAX_STEP = 2;
 
 export default function ServiceSelectorMenu()
 {
-    const [fromService, setFromService] = useState<string | null>(null);
+    const location = useLocation();
+    const fromServiceFromState = location.state?.fromService || null;
+    const selectedPlaylistFromState = location.state?.selectedPlaylist || null;
+
+    const [fromService, setFromService] = useState<string | null>(fromServiceFromState);
     const [toService, setToService] = useState<string | null>(null);
     const [currentStep, setCurrentStep] = useState<number>(1);
     const [authenticated, setAuthenticated] = useState<string[]>([]);
