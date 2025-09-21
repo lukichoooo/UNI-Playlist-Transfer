@@ -4,6 +4,8 @@ import com.khundadze.PlaylistConverter.dtos.PlaylistSearchDto;
 import com.khundadze.PlaylistConverter.dtos.TargetMusicDto;
 import com.khundadze.PlaylistConverter.models.Playlist;
 import com.khundadze.PlaylistConverter.services.MusicMapper;
+import com.khundadze.PlaylistConverter.streamingServices.algorithm.MusicMatcher;
+import com.khundadze.PlaylistConverter.streamingServices.algorithm.MusicQueryBuilder;
 import lombok.AllArgsConstructor;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -15,6 +17,7 @@ public abstract class MusicService {
     protected final MusicMatcher matcher;
     protected final MusicMapper mapper;
     protected final WebClient webClient;
+    protected final MusicQueryBuilder queryBuilder;
 
     protected <T> T getRequest(String uri, String accessToken, Class<T> clazz) {
         return webClient.get()

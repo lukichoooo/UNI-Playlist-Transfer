@@ -7,8 +7,9 @@ import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 import com.khundadze.PlaylistConverter.models.Music;
 import com.khundadze.PlaylistConverter.models.Playlist;
 import com.khundadze.PlaylistConverter.services.MusicMapper;
-import com.khundadze.PlaylistConverter.streamingServices.MusicMatcher;
 import com.khundadze.PlaylistConverter.streamingServices.MusicService;
+import com.khundadze.PlaylistConverter.streamingServices.algorithm.MusicMatcher;
+import com.khundadze.PlaylistConverter.streamingServices.algorithm.MusicQueryBuilder;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -24,9 +25,10 @@ public class SoundCloudService extends MusicService {
     public SoundCloudService(
             @Qualifier("soundCloudWebClient") WebClient webClient,
             MusicMatcher matcher,
-            MusicMapper mapper
+            MusicMapper mapper,
+            MusicQueryBuilder queryBuilder
     ) {
-        super(matcher, mapper, webClient);
+        super(matcher, mapper, webClient, queryBuilder);
     }
 
 
@@ -122,13 +124,15 @@ public class SoundCloudService extends MusicService {
     public String findTrackId(String accessToken, TargetMusicDto target) {
         if (target == null || target.name() == null) return null;
 
-        String query = UriComponentsBuilder
+        String query = queryBuilder.buildQuery(target, StreamingPlatform.SOUNDCLOUD);
+
+        String searchUrl = UriComponentsBuilder
                 .fromHttpUrl(API_BASE + "/tracks")
-                .queryParam("q", target.name())
+                .queryParam("q", query)
                 .queryParam("limit", 50)
                 .build().toUriString();
 
-        List<Map<String, Object>> response = getRequest(query, accessToken, List.class);
+        List<Map<String, Object>> response = getRequest(searchUrl, accessToken, List.class);
         if (response == null) return null;
 
         List<ResultMusicDto> results = new ArrayList<>();
@@ -160,7 +164,6 @@ public class SoundCloudService extends MusicService {
             results.add(mapper.toResultMusicDto(music));
         }
         Music bestMatch = matcher.bestMatch(target, results);
-        System.out.println("Found song: " + ((bestMatch != null) ? bestMatch.getName() : null));
         return (bestMatch != null) ? bestMatch.getId() : null;
     }
 

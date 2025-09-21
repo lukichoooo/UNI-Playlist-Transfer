@@ -7,8 +7,9 @@ import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 import com.khundadze.PlaylistConverter.models.Music;
 import com.khundadze.PlaylistConverter.models.Playlist;
 import com.khundadze.PlaylistConverter.services.MusicMapper;
-import com.khundadze.PlaylistConverter.streamingServices.MusicMatcher;
 import com.khundadze.PlaylistConverter.streamingServices.MusicService;
+import com.khundadze.PlaylistConverter.streamingServices.algorithm.MusicMatcher;
+import com.khundadze.PlaylistConverter.streamingServices.algorithm.MusicQueryBuilder;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -25,9 +26,10 @@ public class YouTubeService extends MusicService {
     public YouTubeService(
             @Qualifier("youTubeWebClient") WebClient webClient,
             MusicMatcher matcher,
-            MusicMapper mapper
+            MusicMapper mapper,
+            MusicQueryBuilder queryBuilder
     ) {
-        super(matcher, mapper, webClient);
+        super(matcher, mapper, webClient, queryBuilder);
     }
 
     private final String API_BASE = "https://www.googleapis.com/youtube/v3";
@@ -104,9 +106,6 @@ public class YouTubeService extends MusicService {
                     playlistItemBody,
                     Map.class
             );
-
-            System.out.println("Adding video " + videoId); // ✅ Debug
-
             // Collect Music object (using videoId as a placeholder name)
             musics.add(Music.builder().id(videoId).name(videoId).build());
         }
@@ -152,8 +151,6 @@ public class YouTubeService extends MusicService {
                     String artist = snippet.getOrDefault("videoOwnerChannelTitle", "").toString();
                     String description = snippet.getOrDefault("description", "").toString();
 
-                    System.out.println("Fetched video: " + videoId + " - " + name); // 🔹 debug
-
                     Music music = Music.builder()
                             .id(videoId)
                             .name(name)
@@ -181,10 +178,12 @@ public class YouTubeService extends MusicService {
             return null;
         }
 
+        String query = queryBuilder.buildQuery(target, StreamingPlatform.YOUTUBE);
+
         String searchUrl = UriComponentsBuilder.fromHttpUrl(API_BASE + "/search")
                 .queryParam("part", "snippet")
                 .queryParam("type", "video")
-                .queryParam("q", target.name())
+                .queryParam("q", query)
                 .queryParam("order", "viewCount")
                 .queryParam("maxResults", 50)
                 .toUriString();
@@ -221,7 +220,6 @@ public class YouTubeService extends MusicService {
         }
 
         Music bestMatch = matcher.bestMatch(target, results);
-        System.out.println("Found song: " + ((bestMatch != null) ? bestMatch.getName() : null));
         return (bestMatch != null) ? bestMatch.getId() : null;
     }
 

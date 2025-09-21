@@ -4,8 +4,9 @@ import com.khundadze.PlaylistConverter.dtos.PlaylistSearchDto;
 import com.khundadze.PlaylistConverter.dtos.TargetMusicDto;
 import com.khundadze.PlaylistConverter.models.Playlist;
 import com.khundadze.PlaylistConverter.services.MusicMapper;
-import com.khundadze.PlaylistConverter.streamingServices.MusicMatcher;
 import com.khundadze.PlaylistConverter.streamingServices.MusicService;
+import com.khundadze.PlaylistConverter.streamingServices.algorithm.MusicMatcher;
+import com.khundadze.PlaylistConverter.streamingServices.algorithm.MusicQueryBuilder;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -18,9 +19,11 @@ public class SpotifyService extends MusicService {
     public SpotifyService(
             @Qualifier("spotifyWebClient") WebClient webClient,
             MusicMatcher matcher,
-            MusicMapper mapper
+            MusicMapper mapper,
+            MusicQueryBuilder queryBuilder
+
     ) {
-        super(matcher, mapper, webClient);
+        super(matcher, mapper, webClient, queryBuilder);
     }
 
     @Override

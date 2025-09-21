@@ -1,12 +1,9 @@
-package com.khundadze.PlaylistConverter.securityConfig.oauth2ForPlatformAuth.test;
+package com.khundadze.PlaylistConverter.securityConfig.oauth2ForPlatformAuth;
 
-import com.khundadze.PlaylistConverter.securityConfig.oauth2ForPlatformAuth.StateManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 
 class StateManagerTest {
 
@@ -17,69 +14,77 @@ class StateManagerTest {
         stateManager = new StateManager();
     }
 
-    // --- STATE GENERATION ---
     @Test
-    void generateState_shouldReturnUniqueUUID() {
+    void generateState() {
         String state1 = stateManager.generateState();
         String state2 = stateManager.generateState();
+
         assertNotNull(state1);
+        assertFalse(state1.isEmpty());
         assertNotNull(state2);
         assertNotEquals(state1, state2);
     }
 
-    // --- USER MAPPING ---
     @Test
-    void putAndRemoveUser_shouldReturnCorrectUserId() {
-        Long userId = 42L;
+    void putAndRemovePrincipal_LongId() {
         String state = stateManager.generateState();
+        Long principalId = 123L;
 
-        stateManager.putUser(state, userId);
-        Long removed = stateManager.removeUser(state);
-        assertEquals(userId, removed);
+        stateManager.putPrincipal(state, principalId);
+        Object removedPrincipalId = stateManager.removePrincipal(state);
 
-        // Removing again should return null
-        assertNull(stateManager.removeUser(state));
-    }
-
-    // --- TEMP TOKEN MAPPING ---
-    @Test
-    void putAndRemoveTempToken_shouldReturnTokenBeforeExpiry() {
-        OAuth2AccessTokenResponse token = mock(OAuth2AccessTokenResponse.class);
-        String state = stateManager.generateState();
-
-        stateManager.putTempToken(state, token);
-        OAuth2AccessTokenResponse removed = stateManager.removeTempToken(state);
-        assertEquals(token, removed);
-
-        // Removing again should return null
-        assertNull(stateManager.removeTempToken(state));
+        assertEquals(principalId, removedPrincipalId);
+        assertNull(stateManager.removePrincipal(state));
     }
 
     @Test
-    void removeTempToken_shouldReturnNullIfExpired() throws InterruptedException {
-        OAuth2AccessTokenResponse token = mock(OAuth2AccessTokenResponse.class);
+    void putAndRemovePrincipal_StringId() {
         String state = stateManager.generateState();
+        String principalId = "user-abc-123";
 
-        stateManager.putTempToken(state, token);
+        stateManager.putPrincipal(state, principalId);
+        Object removedPrincipalId = stateManager.removePrincipal(state);
 
-        // Manually simulate expiration by reflection (not touching original class)
-        Thread.sleep(1000); // sleep 1 second is enough if TTL is very small for test
-        OAuth2AccessTokenResponse removed = stateManager.removeTempToken(state);
-        // TTL is 30 min, so this will not expire yet
-        assertEquals(token, removed);
+        assertEquals(principalId, removedPrincipalId);
+        assertNull(stateManager.removePrincipal(state));
     }
 
-    // --- CODE VERIFIER MAPPING ---
+
     @Test
-    void putAndRemoveCodeVerifier_shouldReturnCorrectVerifier() {
-        String verifier = "codeVerifier123";
+    void removePrincipal_nonExistentState() {
+        assertNull(stateManager.removePrincipal("non-existent-state"));
+    }
+
+    @Test
+    void putAndRemoveCodeVerifier() {
         String state = stateManager.generateState();
+        String codeVerifier = "test_code_verifier";
 
-        stateManager.putCodeVerifier(state, verifier);
-        String removed = stateManager.removeCodeVerifier(state);
-        assertEquals(verifier, removed);
+        stateManager.putCodeVerifier(state, codeVerifier);
+        String removedCodeVerifier = stateManager.removeCodeVerifier(state);
 
-        // Removing again should return null
+        assertEquals(codeVerifier, removedCodeVerifier);
+        assertNull(stateManager.removeCodeVerifier(state));
+    }
+
+    @Test
+    void removeCodeVerifier_nonExistentState() {
+        assertNull(stateManager.removeCodeVerifier("non-existent-state"));
+    }
+
+    @Test
+    void mapsShouldBehaveIndependently() {
+        String state = stateManager.generateState();
+        Long principalId = 456L;
+        String codeVerifier = "independent_verifier";
+
+        stateManager.putPrincipal(state, principalId);
+        stateManager.putCodeVerifier(state, codeVerifier);
+
+        assertEquals(principalId, stateManager.removePrincipal(state));
+        assertEquals(codeVerifier, stateManager.removeCodeVerifier(state));
+
+        assertNull(stateManager.removePrincipal(state));
         assertNull(stateManager.removeCodeVerifier(state));
     }
 }

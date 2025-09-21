@@ -1,4 +1,4 @@
-package com.khundadze.PlaylistConverter.streamingServices;
+package com.khundadze.PlaylistConverter.streamingServices.algorithm;
 
 import com.khundadze.PlaylistConverter.dtos.ResultMusicDto;
 import com.khundadze.PlaylistConverter.dtos.TargetMusicDto;

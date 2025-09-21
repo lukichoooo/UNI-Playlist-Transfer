@@ -1,9 +1,9 @@
-package com.khundadze.PlaylistConverter.musicTests;
+package com.khundadze.PlaylistConverter.algorithmTests;
 
 import com.khundadze.PlaylistConverter.dtos.ResultMusicDto;
 import com.khundadze.PlaylistConverter.dtos.TargetMusicDto;
 import com.khundadze.PlaylistConverter.models.Music;
-import com.khundadze.PlaylistConverter.streamingServices.MusicMatcher;
+import com.khundadze.PlaylistConverter.streamingServices.algorithm.MusicMatcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
