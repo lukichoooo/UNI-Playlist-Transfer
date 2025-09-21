@@ -36,6 +36,7 @@ export default function PlaylistDetailsStep({
     const [isTransferring, setIsTransferring] = useState(false);
 
     const [transferState, setTransferState] = useState<string>("IDLE");
+    const [isLoadingPlaylists, setIsLoadingPlaylists] = useState(false);
 
 
     useEffect(() =>
@@ -44,8 +45,19 @@ export default function PlaylistDetailsStep({
         {
             if (fromService && isFromAuthenticated)
             {
-                const playlists = await converterService.getPlaylists(fromService as StreamingPlatform);
-                setSortedFromPlaylists(playlists);
+                setIsLoadingPlaylists(true);
+                try
+                {
+                    const playlists = await converterService.getPlaylists(fromService as StreamingPlatform);
+                    setSortedFromPlaylists(playlists);
+                } catch (error)
+                {
+                    console.error('Failed to fetch playlists:', error);
+                    // Handle error state if needed
+                } finally
+                {
+                    setIsLoadingPlaylists(false);
+                }
             }
         };
         fetchPlaylists();
@@ -153,6 +165,7 @@ export default function PlaylistDetailsStep({
                     setSelectedPlaylist={setSelectedPlaylist}
                     isOpen={playlistModalOpen}
                     onClose={() => setPlaylistModalOpen(false)}
+                    isLoading={isLoadingPlaylists}
                 />
             </div>
 

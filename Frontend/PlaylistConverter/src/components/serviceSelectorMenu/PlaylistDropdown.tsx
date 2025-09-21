@@ -9,6 +9,7 @@ type Props = {
     setSelectedPlaylist: (playlist: PlaylistSearchDto) => void;
     isOpen: boolean;
     onClose: () => void;
+    isLoading: boolean;
 };
 
 export function PlaylistDropdown({
@@ -17,6 +18,7 @@ export function PlaylistDropdown({
     setSelectedPlaylist,
     isOpen,
     onClose,
+    isLoading,
 }: Props)
 {
     const [search, setSearch] = useState("");
@@ -55,27 +57,33 @@ export function PlaylistDropdown({
                     placeholder="Search playlists..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
+                    disabled={isLoading}
                 />
                 <div className="playlist-list">
-                    {filteredPlaylists.length === 0 && <div className="playlist-item">No Results</div>}{/* TODO: add loading fallback */}
-                    {filteredPlaylists.map((pl) => (
-                        <div
-                            key={pl.id}
-                            className={`playlist-item ${selectedPlaylist?.id === pl.id ? "selected" : ""
-                                }`}
-                            onClick={() =>
-                            {
-                                setSelectedPlaylist(pl);
-                                onClose();
-                                setSearch("");
-                            }}
-                        >
-                            <span className="playlist-name">{pl.name}</span>
-                            <span className="playlist-count">
-                                {pl.totalTracks} {pl.totalTracks === 1 ? "track" : "tracks"}
-                            </span>
-                        </div>
-                    ))}
+                    {isLoading ? (
+                        <div className="playlist-item">Loading playlists...</div>
+                    ) : filteredPlaylists.length === 0 ? (
+                        <div className="playlist-item">No Results</div>
+                    ) : (
+                        filteredPlaylists.map((pl) => (
+                            <div
+                                key={pl.id}
+                                className={`playlist-item ${selectedPlaylist?.id === pl.id ? "selected" : ""
+                                    }`}
+                                onClick={() =>
+                                {
+                                    setSelectedPlaylist(pl);
+                                    onClose();
+                                    setSearch("");
+                                }}
+                            >
+                                <span className="playlist-name">{pl.name}</span>
+                                <span className="playlist-count">
+                                    {pl.totalTracks} {pl.totalTracks === 1 ? "track" : "tracks"}
+                                </span>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
         </div>
