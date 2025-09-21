@@ -11,4 +11,5 @@ public class TransferProgress {
     private String message;
     private int current;
     private int total;
+    private boolean found;
 }

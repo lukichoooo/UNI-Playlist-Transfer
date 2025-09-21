@@ -228,7 +228,7 @@ public class PlatformAuthController {
         } else if (principalId instanceof String guestId) {
             oauthTokenService.saveForGuest(guestId, platform, accessToken, refreshToken, expiry);
         } else {
-            System.out.println("No user or guest ID found in state");
+            throw new IllegalStateException("Unknown principal ID type: " + principalId.getClass().getName());
         }
     }
 }

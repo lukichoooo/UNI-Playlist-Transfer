@@ -70,7 +70,7 @@ public class MusicServiceManager {
         List<String> toTrackIds = fromTracks.stream()
                 .map(track -> {
                     String trackId = svcTo.findTrackId(toToken, track);
-                    logToFrontend(transferState, track, trackId, trackCount.getAndIncrement(), fromTracks.size());
+                    logToFrontend(transferState, track, trackId, trackCount.incrementAndGet(), fromTracks.size());
                     return trackId;
                 })
                 .filter(id -> id != null && !id.isEmpty())
@@ -89,7 +89,8 @@ public class MusicServiceManager {
                 new TransferProgress(
                         "Completed: Playlist created successfully!",
                         createdPlaylist.getMusicCount(), // Current is now the same as total
-                        createdPlaylist.getMusicCount()  // Total remains the same
+                        createdPlaylist.getMusicCount(), // Total remains the same
+                        true
                 )
         );
 
@@ -97,13 +98,15 @@ public class MusicServiceManager {
     }
 
     private void logToFrontend(String transferState, TargetMusicDto track, String trackId, int currentTrack, int totalTracks) {
+        boolean found = trackId != null && !trackId.isEmpty();
         progressService.sendProgress(
                 transferState,
                 new TransferProgress(
-                        (trackId != null && !trackId.isEmpty() ?
-                                "Found:" : "Unavilable:") + " - " + track.name(),
+                        (found ? "Found:" : "Unavailable:") + " - " + track.name(),
                         currentTrack,
-                        totalTracks)
+                        totalTracks,
+                        found
+                )
         );
     }
 
