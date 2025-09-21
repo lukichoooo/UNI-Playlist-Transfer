@@ -15,6 +15,7 @@ public class PlatformQueryRegistry {
         return switch (toPlatform) {
             case YOUTUBE -> generateYoutubeQuery(target);
             case SOUNDCLOUD -> generateSoundcloudQuery(target);
+            case SPOTIFY -> generateSpotifyQuery(target);
             default -> throw new IllegalArgumentException("Unsupported platform: " + toPlatform);
         };
     }
@@ -31,5 +32,9 @@ public class PlatformQueryRegistry {
         return (artistName + " " + trackName).trim();
     }
 
+    private String generateSpotifyQuery(TargetMusicDto target) {
+        String trackName = normalizer.normalizeForQuery(target.name());
+        return trackName.trim();
+    }
 
 }

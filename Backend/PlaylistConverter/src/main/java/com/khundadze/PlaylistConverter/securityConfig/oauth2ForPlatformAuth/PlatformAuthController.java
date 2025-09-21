@@ -54,10 +54,6 @@ public class PlatformAuthController {
     @Value("${FRONTEND_URL}")
     private String FRONTEND_URL;
 
-    /**
-     * Initiates the OAuth2 connection flow for a given platform.
-     * It handles both authenticated (with JWT) and anonymous users.
-     */
     @GetMapping("/connect/{platform}")
     public void connectToPlatform(@PathVariable String platform,
                                   @RequestParam(value = "jwt_token", required = false) String token,
@@ -99,10 +95,6 @@ public class PlatformAuthController {
         response.sendRedirect(uriBuilder.build().toUriString());
     }
 
-    /**
-     * Handles the OAuth2 callback from the platform provider.
-     * It exchanges the authorization code for an access token.
-     */
     @GetMapping("/callback/{platform}")
     public void platformCallback(@PathVariable String platform,
                                  @RequestParam("code") String code,
@@ -131,9 +123,6 @@ public class PlatformAuthController {
     // Private Helper Methods
     // ===================================================================================
 
-    /**
-     * If a JWT is provided, validates it and associates the user ID with the state.
-     */
     private void handleUserAuthentication(String token, String state) {
         if (token != null && !token.isBlank()) {
             try {
@@ -153,10 +142,6 @@ public class PlatformAuthController {
         }
     }
 
-    /**
-     * Exchanges the authorization code for a token using Spring's default client.
-     * Used for standard OAuth2 providers like Google and Spotify.
-     */
     private OAuth2AccessTokenResponse getStandardTokenResponse(String code, String state, ClientRegistration registration) {
         OAuth2AuthorizationRequest authorizationRequest = OAuth2AuthorizationRequest.authorizationCode()
                 .authorizationUri(registration.getProviderDetails().getAuthorizationUri())
@@ -178,9 +163,6 @@ public class PlatformAuthController {
         return tokenResponseClient.getTokenResponse(grantRequest);
     }
 
-    /**
-     * Exchanges the authorization code for a token manually for SoundCloud (using PKCE).
-     */
     private OAuth2AccessTokenResponse getSoundCloudTokenResponse(String code, String state, ClientRegistration registration) {
         String codeVerifier = stateManager.removeCodeVerifier(state);
 
@@ -209,11 +191,6 @@ public class PlatformAuthController {
                 .build();
     }
 
-    /**
-     * Processes the obtained token response.
-     * If the user was authenticated, it saves the token to the database.
-     * Otherwise, it stores the token temporarily for the anonymous flow.
-     */
     private void processTokenResponse(String state, OAuth2AccessTokenResponse tokenResponse, StreamingPlatform platform) {
         // 1. Get the principal ID, which can be a Long (user) or a String (guest).
         Object principalId = stateManager.removePrincipal(state); // Assumes you have a method like this
