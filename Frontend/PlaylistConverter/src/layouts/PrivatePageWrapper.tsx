@@ -6,7 +6,7 @@ export default function PrivatePageWrapper(): JSX.Element
 {
     const location = useLocation();
 
-    if (!authService.isTokenAvailable())
+    if (!authService.isLoggedIn())
     {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
