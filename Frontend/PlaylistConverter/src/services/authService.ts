@@ -166,6 +166,26 @@ class AuthService
         }
     };
 
+    getUserDetails = (): { username: string; roles: string[] } | null =>
+    {
+        const token = localStorage.getItem(this.TOKEN_KEY);
+        if (!token) return null;
+
+        try
+        {
+            const payload: JwtPayload = jwtDecode(token);
+            const username = payload.sub || "";
+            const roles = Array.isArray(payload.auth) ? payload.auth : [];
+
+            return { username, roles };
+        } catch (error)
+        {
+            console.error("Failed to decode token:", error);
+            this.removeToken(); // Clean up invalid token
+            return null;
+        }
+    };
+
 }
 
 export const authService = new AuthService();

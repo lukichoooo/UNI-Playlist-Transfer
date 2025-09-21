@@ -39,26 +39,25 @@ export default function Dashboard()
         DEEZER: "",
     });
 
-    // New state for search and pagination
     const [searchQuery, setSearchQuery] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
 
     const navigate = useNavigate();
 
+    const fetchAuthenticatedServices = async () =>
+    {
+        try
+        {
+            const services = await converterService.getAuthenticatedServices();
+            setAuthenticatedServices(services);
+        } catch (err)
+        {
+            console.error("Failed to fetch authenticated services:", err);
+        }
+    };
+
     useEffect(() =>
     {
-        const fetchAuthenticatedServices = async () =>
-        {
-            try
-            {
-                const services = await converterService.getAuthenticatedServices();
-                setAuthenticatedServices(services);
-            } catch (err)
-            {
-                console.error("Failed to fetch authenticated services:", err);
-            }
-        };
-
         fetchAuthenticatedServices();
     }, []);
 
@@ -93,11 +92,23 @@ export default function Dashboard()
             await Promise.all(fetchPromises);
             setPlaylistsByPlatform(newPlaylistsByPlatform);
             setIsLoading(false);
-            setCurrentPage(1); // Reset page on new data
+            setCurrentPage(1);
         };
 
         fetchPlaylists(selectedPlatforms);
     }, [selectedPlatforms]);
+
+    const handleAuthenticate = async (platform: StreamingPlatform) =>
+    {
+        try
+        {
+            await converterService.oauthLogin(platform);
+            await fetchAuthenticatedServices();
+        } catch (error)
+        {
+            console.error("Authentication failed:", error);
+        }
+    };
 
     const handlePlatformToggle = (platform: StreamingPlatform) =>
     {
@@ -134,7 +145,6 @@ export default function Dashboard()
         return fuse.search(searchQuery).map(result => result.item);
     }, [searchQuery, allPlaylists, fuse]);
 
-    // Pagination logic
     const totalPages = Math.ceil(filteredPlaylists.length / PLAYLISTS_PER_PAGE);
     const paginatedPlaylists = useMemo(() =>
     {
@@ -153,7 +163,6 @@ export default function Dashboard()
         setCurrentPage(prev => Math.min(prev + 1, totalPages));
     };
 
-    // The new onClick handler for the "Transfer" button
     const handleTransferClick = (platform: StreamingPlatform, playlist: PlaylistSearchDto) =>
     {
         navigate("/", { state: { fromService: platform, selectedPlaylist: playlist } });
@@ -165,17 +174,20 @@ export default function Dashboard()
             <p className={styles.dashboardDescription}>Select one or more streaming services to search your playlists. Click the service icon to toggle selection.</p>
 
             <div className={styles.serviceSelection}>
-                {ALL_SERVICES.map((platform) => (
-                    <button
-                        key={platform}
-                        className={`${styles.serviceButton} ${selectedPlatforms.includes(platform) ? styles.selected : ""} ${authenticatedServices.includes(platform) ? styles.authenticated : ""}`}
-                        onClick={() => handlePlatformToggle(platform)}
-                        disabled={!authenticatedServices.includes(platform)}
-                    >
-                        {platform}
-                        {authenticatedServices.includes(platform) && <span className={styles.checkIcon}>✔</span>}
-                    </button>
-                ))}
+                {ALL_SERVICES.map((platform) =>
+                {
+                    const isAuthenticated = authenticatedServices.includes(platform);
+                    return (
+                        <button
+                            key={platform}
+                            className={`${styles.serviceButton} ${selectedPlatforms.includes(platform) ? styles.selected : ""} ${isAuthenticated ? styles.authenticated : ""}`}
+                            onClick={() => isAuthenticated ? handlePlatformToggle(platform) : handleAuthenticate(platform)}
+                        >
+                            {platform}
+                            {isAuthenticated && <span className={styles.checkIcon}>✔</span>}
+                        </button>
+                    );
+                })}
             </div>
 
             <div className={styles.searchSection}>
@@ -186,7 +198,7 @@ export default function Dashboard()
                     onChange={(e) =>
                     {
                         setSearchQuery(e.target.value);
-                        setCurrentPage(1); // Reset to page 1 on new search
+                        setCurrentPage(1);
                     }}
                     className={styles.searchInput}
                 />
@@ -195,7 +207,7 @@ export default function Dashboard()
             <div className={styles.playlistSection}>
                 {isLoading && <p>Loading playlists...</p>}
                 {!isLoading && selectedPlatforms.length === 0 && (
-                    <p className={styles.infoMessage}>Select a service to begin searching for playlists.</p>
+                    <p className={styles.infoMessage}>Select multiple services to begin searching for playlists.</p>
                 )}
                 {!isLoading && Object.values(errors).some(e => e) && (
                     <div className={styles.errorMessages}>

@@ -21,7 +21,7 @@ export type RegisterRequest = {
 }
 
 export type AuthResponse = {
-    token: string; // JWT returned from backend
+    token: string;
 }
 
 export type PlaylistSearchDto =
@@ -30,3 +30,20 @@ export type PlaylistSearchDto =
         name: string;
         totalTracks: number;
     }
+
+export type StreamingPlatform =
+    | "SPOTIFY"
+    | "YOUTUBE"
+    | "SOUNDCLOUD"
+    | "DEEZER"
+    | "APPLEMUSIC"
+    | "YOUTUBEMUSIC";
+
+export interface JwtPayload
+{
+    sub: string;
+    auth: string[];
+    exp: number;
+    id: number;
+    iat: number;
+}
