@@ -1,6 +1,7 @@
 // src/services/authService.ts
 import api from "./api";
 import { jwtDecode } from "jwt-decode";
+import { authApi } from "./api";
 
 import { openOAuthPopup } from "./oauthHelper";
 const VITE_BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -12,24 +13,23 @@ interface JwtPayload
     [key: string]: any;
 }
 
-const BASE_URL = `${VITE_BASE_URL}/api/auth`;
-
 class AuthService
 {
     private TOKEN_KEY = "jwtToken";
 
+
     login = async (username: string, password: string): Promise<string> =>
     {
-        const response = await api.post(`${BASE_URL}/login`, { username, password });
-        const token = response.data.token;
+        const response = await authApi.post(`/login`, { username, password });
+        const token = response.data.accessToken;
         this.saveToken(token);
         return token;
     };
 
     register = async (username: string, password: string): Promise<string> =>
     {
-        const response = await api.post(`${BASE_URL}/register`, { username, password });
-        const token = response.data.token;
+        const response = await authApi.post(`/register`, { username, password });
+        const token = response.data.accessToken;
         this.saveToken(token);
         return token;
     };
@@ -38,6 +38,7 @@ class AuthService
     {
         this.removeToken();
     };
+
 
     // src/services/authService.ts (or a component where you trigger login)
     googleLogin = async (): Promise<void> =>
@@ -66,8 +67,6 @@ class AuthService
         }
     };
 
-
-    // NEW: parse URL search params and save token
     handleOAuthSuccess = (search: string): boolean =>
     {
         const params = new URLSearchParams(search);
@@ -83,20 +82,31 @@ class AuthService
         localStorage.setItem(this.TOKEN_KEY, token);
     };
 
-    getToken = (): string | null =>
-    {
-        return localStorage.getItem(this.TOKEN_KEY);
-    };
-
     removeToken = () =>
     {
         localStorage.removeItem(this.TOKEN_KEY);
     };
 
-    isLoggedIn = (): boolean =>
+
+    getToken = async (): Promise<string | null> =>
     {
-        const token = this.getToken();
-        if (!token) return false;
+        let token = localStorage.getItem(this.TOKEN_KEY);
+        if (!token)
+        {
+            console.log("No token found, fetching a new guest token...");
+            token = await this.fetchGuestToken();
+        }
+        return token;
+    };
+
+    isTokenAvailable = async (): Promise<boolean> =>
+    {
+        const token = await this.getToken();
+
+        if (!token)
+        {
+            return false;
+        }
 
         try
         {
@@ -109,6 +119,54 @@ class AuthService
             return false;
         }
     };
+
+    private fetchGuestToken = async (): Promise<string | null> =>
+    {
+        try
+        {
+            const response = await authApi.post(`/guest`);
+
+            // Add this validation check!
+            const token = response.data?.accessToken;
+            if (typeof token === 'string' && token.length > 0)
+            {
+                this.saveToken(token);
+                return token;
+            } else
+            {
+                console.error("Backend did not return a valid accessToken.", response.data);
+                return null;
+            }
+        } catch (error)
+        {
+            console.error("Failed to fetch guest token:", error);
+            return null;
+        }
+    };
+
+    isLoggedIn = (): boolean =>
+    {
+        const token = localStorage.getItem(this.TOKEN_KEY);
+        if (!token) return false;
+
+        try
+        {
+            const payload: JwtPayload = jwtDecode(token);
+            const now = Math.floor(Date.now() / 1000);
+
+            if (payload.exp && payload.exp < now)
+            {
+                return false; // Token is expired
+            }
+
+            // Return true ONLY if the user is not a guest.
+            return payload.auth?.includes("ROLE_ANONYMOUS") === false;
+        } catch (error)
+        {
+            return false;
+        }
+    };
+
 }
 
 export const authService = new AuthService();

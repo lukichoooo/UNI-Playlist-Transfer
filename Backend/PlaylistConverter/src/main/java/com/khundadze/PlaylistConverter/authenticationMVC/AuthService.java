@@ -1,17 +1,17 @@
 package com.khundadze.PlaylistConverter.authenticationMVC;
 
+import com.khundadze.PlaylistConverter.dtos.GuestSession;
+import com.khundadze.PlaylistConverter.models_db.User;
+import com.khundadze.PlaylistConverter.repo.UserRepository;
+import com.khundadze.PlaylistConverter.securityConfig.JwtService;
+import com.khundadze.PlaylistConverter.services.GuestService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import com.khundadze.PlaylistConverter.models_db.User;
-import com.khundadze.PlaylistConverter.repo.UserRepository;
-import com.khundadze.PlaylistConverter.securityConfig.JwtService;
-
-import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +22,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final GuestService guestService;
 
     public String register(RegisterRequest request) {
         if (userRepository.existsByUsername(request.username())) {
@@ -64,4 +65,12 @@ public class AuthService {
         return jwtService.generateToken(userDetails);
     }
 
+
+    public String createGuestSession() {
+        GuestSession guestSession = jwtService.createGuestSessionToken();
+
+        guestService.initializeGuest(guestSession.guestId());
+
+        return guestSession.token();
+    }
 }

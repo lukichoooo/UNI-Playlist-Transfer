@@ -1,10 +1,10 @@
 package com.khundadze.PlaylistConverter.securityConfig.oauth2ForPlatformAuth;
 
-import com.khundadze.PlaylistConverter.dtos.OAuthTokenResponseDto;
 import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
 import com.khundadze.PlaylistConverter.models_db.User;
 import com.khundadze.PlaylistConverter.securityConfig.JwtService;
 import com.khundadze.PlaylistConverter.services.OAuthTokenService;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +29,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -125,15 +127,6 @@ public class PlatformAuthController {
         response.sendRedirect(FRONTEND_URL + "/platform-auth-success");
     }
 
-    /**
-     * Retrieves a temporary token for an anonymous user flow.
-     */
-    @GetMapping("/tempToken")
-    public OAuthTokenResponseDto getTempToken(@RequestParam String state, @RequestParam String platform) {
-        OAuth2AccessTokenResponse tokenResponse = stateManager.removeTempToken(state);
-        return new OAuthTokenResponseDto(tokenResponse.getAccessToken().getTokenValue(), StreamingPlatform.valueOf(platform.toUpperCase()));
-    }
-
     // ===================================================================================
     // Private Helper Methods
     // ===================================================================================
@@ -144,13 +137,18 @@ public class PlatformAuthController {
     private void handleUserAuthentication(String token, String state) {
         if (token != null && !token.isBlank()) {
             try {
-                String username = jwtService.extractUsername(token);
-                User user = (User) userDetailsService.loadUserByUsername(username);
-                if (jwtService.isTokenValid(token, user)) {
-                    stateManager.putUser(state, user.getId());
+                Claims claims = jwtService.extractAllClaims(token);
+
+                String principalId = claims.getSubject();
+                List<String> authorities = claims.get("auth", List.class);
+
+                if (authorities != null && !authorities.contains("ROLE_ANONYMOUS")) {
+                    User user = (User) userDetailsService.loadUserByUsername(principalId);
+                    stateManager.putPrincipal(state, user.getId()); // Store the Long ID
+                } else {
+                    stateManager.putPrincipal(state, principalId); // Store the String ID
                 }
             } catch (Exception ignored) {
-                // Ignore exceptions for invalid/expired tokens; proceed as an anonymous user.
             }
         }
     }
@@ -217,18 +215,20 @@ public class PlatformAuthController {
      * Otherwise, it stores the token temporarily for the anonymous flow.
      */
     private void processTokenResponse(String state, OAuth2AccessTokenResponse tokenResponse, StreamingPlatform platform) {
-        Long userId = stateManager.removeUser(state);
+        // 1. Get the principal ID, which can be a Long (user) or a String (guest).
+        Object principalId = stateManager.removePrincipal(state); // Assumes you have a method like this
 
-        if (userId != null) {
-            oauthTokenService.save(
-                    userId,
-                    platform,
-                    tokenResponse.getAccessToken().getTokenValue(),
-                    tokenResponse.getRefreshToken() != null ? tokenResponse.getRefreshToken().getTokenValue() : null,
-                    tokenResponse.getAccessToken().getExpiresAt()
-            );
+        String accessToken = tokenResponse.getAccessToken().getTokenValue();
+        String refreshToken = tokenResponse.getRefreshToken() != null ? tokenResponse.getRefreshToken().getTokenValue() : null;
+        Instant expiry = tokenResponse.getAccessToken().getExpiresAt();
+
+        // 2. Check the type of the ID and call the correct overloaded save method.
+        if (principalId instanceof Long userId) {
+            oauthTokenService.saveForRegisteredUser(userId, platform, accessToken, refreshToken, expiry);
+        } else if (principalId instanceof String guestId) {
+            oauthTokenService.saveForGuest(guestId, platform, accessToken, refreshToken, expiry);
         } else {
-            stateManager.putTempToken(state, tokenResponse);
+            System.out.println("No user or guest ID found in state");
         }
     }
 }

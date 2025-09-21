@@ -1,5 +1,7 @@
 package com.khundadze.PlaylistConverter.authenticationMVC;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public record AuthResponse(
-                String token) {
+        @JsonProperty("accessToken") String token) {
 }

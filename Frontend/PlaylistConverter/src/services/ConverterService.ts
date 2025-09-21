@@ -19,9 +19,9 @@ const PLATFORM_AUTH_URL = `${VITE_BASE_URL}/api/platformAuth/connect`;
 
 class ConverterService
 {
-    private getAuthHeader()
+    private getAuthHeader = async () =>
     {
-        const token = authService.getToken();
+        const token = await authService.getToken();
         return token ? { Authorization: `Bearer ${token}` } : {};
     }
 
@@ -33,21 +33,12 @@ class ConverterService
 
             let authUrl = `${PLATFORM_AUTH_URL}/${platformPath}`;
 
-            // If the user is logged in, append their JWT to the URL.
-            if (authService.isLoggedIn())
+            const token = await authService.getToken();
+            if (token)
             {
-                const token = authService.getToken();
-                if (token)
-                {
-                    authUrl += `?jwt_token=${token}`;
-                }
-                await openOAuthPopup(authUrl);
+                authUrl += `?jwt_token=${token}`;
             }
-            else
-            {
-                // TODO: Handle the case where the user is not logged in.
-                throw new Error("User must be logged in to authenticate with a platform.");
-            }
+            await openOAuthPopup(authUrl);
 
         } catch (err)
         {
@@ -62,7 +53,7 @@ class ConverterService
         try
         {
             const response = await api.get(`${BASE_URL}/authenticatedPlatforms`, {
-                headers: this.getAuthHeader(),
+                headers: await this.getAuthHeader(),
             });
             return response.data;
         } catch (err)
@@ -77,7 +68,7 @@ class ConverterService
         try
         {
             const response = await api.get(`${BASE_URL}/playlists`, {
-                headers: this.getAuthHeader(),
+                headers: await this.getAuthHeader(),
                 params: { platform },
             });
             return response.data;
@@ -93,7 +84,7 @@ class ConverterService
         try
         {
             const response = await api.get(`${BASE_URL}/transferState`, {
-                headers: this.getAuthHeader(),
+                headers: await this.getAuthHeader(),
             });
             return response.data;
         } catch (err)
@@ -121,7 +112,7 @@ class ConverterService
                 fromPlaylistId,
                 newPlaylistName
             }, {
-                headers: this.getAuthHeader(),
+                headers: await this.getAuthHeader(),
             });
         } catch (err)
         {
