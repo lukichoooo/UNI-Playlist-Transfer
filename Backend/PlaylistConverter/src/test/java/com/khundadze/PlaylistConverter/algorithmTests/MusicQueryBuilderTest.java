@@ -2,7 +2,7 @@ package com.khundadze.PlaylistConverter.algorithmTests;
 
 import com.khundadze.PlaylistConverter.dtos.TargetMusicDto;
 import com.khundadze.PlaylistConverter.enums.StreamingPlatform;
-import com.khundadze.PlaylistConverter.streamingServices.algorithm.MusicQueryBuilder;
+import com.khundadze.PlaylistConverter.streamingServices.algorithm.searchQuery.MusicQueryBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -69,7 +69,7 @@ public class MusicServiceManager {
         // Find tracks in target platform and collect IDs
         List<String> toTrackIds = fromTracks.stream()
                 .map(track -> {
-                    String trackId = svcTo.findTrackId(toToken, track);
+                    String trackId = svcTo.findTrackId(toToken, track, fromPlatform);
                     logToFrontend(transferState, track, trackId, trackCount.incrementAndGet(), fromTracks.size());
                     return trackId;
                 })

@@ -57,7 +57,7 @@ export function PlaylistDropdown({
                     onChange={(e) => setSearch(e.target.value)}
                 />
                 <div className="playlist-list">
-                    {filteredPlaylists.length === 0 && <div className="playlist-item">No results</div>}
+                    {filteredPlaylists.length === 0 && <div className="playlist-item">No Results</div>}{/* TODO: add loading fallback */}
                     {filteredPlaylists.map((pl) => (
                         <div
                             key={pl.id}

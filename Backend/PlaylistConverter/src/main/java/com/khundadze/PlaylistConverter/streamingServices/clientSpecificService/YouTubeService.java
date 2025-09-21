@@ -8,8 +8,8 @@ import com.khundadze.PlaylistConverter.models.Music;
 import com.khundadze.PlaylistConverter.models.Playlist;
 import com.khundadze.PlaylistConverter.services.MusicMapper;
 import com.khundadze.PlaylistConverter.streamingServices.MusicService;
-import com.khundadze.PlaylistConverter.streamingServices.algorithm.MusicMatcher;
-import com.khundadze.PlaylistConverter.streamingServices.algorithm.MusicQueryBuilder;
+import com.khundadze.PlaylistConverter.streamingServices.algorithm.searchQuery.MusicQueryBuilder;
+import com.khundadze.PlaylistConverter.streamingServices.algorithm.searchResultsMatching.MusicMatcher;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -173,12 +173,12 @@ public class YouTubeService extends MusicService {
 
 
     @Override
-    public String findTrackId(String accessToken, TargetMusicDto target) {
+    public String findTrackId(String accessToken, TargetMusicDto target, StreamingPlatform fromPlatform) {
         if (target == null || target.name() == null || target.name().isBlank()) {
             return null;
         }
 
-        String query = queryBuilder.buildQuery(target, StreamingPlatform.YOUTUBE);
+        String query = queryBuilder.buildQuery(target, fromPlatform, StreamingPlatform.YOUTUBE);
 
         String searchUrl = UriComponentsBuilder.fromHttpUrl(API_BASE + "/search")
                 .queryParam("part", "snippet")

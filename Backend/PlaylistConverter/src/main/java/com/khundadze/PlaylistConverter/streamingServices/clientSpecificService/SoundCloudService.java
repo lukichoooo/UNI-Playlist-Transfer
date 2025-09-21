@@ -8,8 +8,8 @@ import com.khundadze.PlaylistConverter.models.Music;
 import com.khundadze.PlaylistConverter.models.Playlist;
 import com.khundadze.PlaylistConverter.services.MusicMapper;
 import com.khundadze.PlaylistConverter.streamingServices.MusicService;
-import com.khundadze.PlaylistConverter.streamingServices.algorithm.MusicMatcher;
-import com.khundadze.PlaylistConverter.streamingServices.algorithm.MusicQueryBuilder;
+import com.khundadze.PlaylistConverter.streamingServices.algorithm.searchQuery.MusicQueryBuilder;
+import com.khundadze.PlaylistConverter.streamingServices.algorithm.searchResultsMatching.MusicMatcher;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -36,20 +36,31 @@ public class SoundCloudService extends MusicService {
 
     @Override
     public List<PlaylistSearchDto> getUsersPlaylists(String accessToken) {
-        List<Map<String, Object>> response = getRequest(API_BASE + "/me/playlists", accessToken, List.class);
+        String uri = API_BASE + "/me/playlists?limit=200&linked_partitioning=1";
         List<PlaylistSearchDto> playlists = new ArrayList<>();
 
-        if (response != null) {
-            for (Map<String, Object> item : response) {
-                String id = String.valueOf(item.get("id"));
-                String title = (String) item.get("title");
-                List<Map<String, Object>> tracksList = (List<Map<String, Object>>) item.get("tracks");
-                int itemCount = tracksList != null ? tracksList.size() : 0;
-                playlists.add(new PlaylistSearchDto(id, title, itemCount));
+        while (uri != null) {
+            Map<String, Object> page = getRequest(uri, accessToken, Map.class);
+
+            List<Map<String, Object>> collection = (List<Map<String, Object>>) page.get("collection");
+            if (collection != null) {
+                for (Map<String, Object> item : collection) {
+                    String id = String.valueOf(item.get("id"));
+                    String title = (String) item.get("title");
+
+                    Integer itemCount = item.get("track_count") != null
+                            ? ((Number) item.get("track_count")).intValue()
+                            : 0;
+
+                    playlists.add(new PlaylistSearchDto(id, title, itemCount));
+                }
             }
+
+            uri = (String) page.get("next_href"); // null means no more pages
         }
         return playlists;
     }
+
 
     @Override
     public Playlist createPlaylist(String accessToken, String playlistName, List<String> trackIds) {
@@ -80,7 +91,7 @@ public class SoundCloudService extends MusicService {
                 .build();
     }
 
-    @Override // TODO: fetches less tracks than in playlist sometimes
+    @Override
     public List<TargetMusicDto> getPlaylistsTracks(String accessToken, String playlistId) {
         Map<String, Object> response = getRequest(API_BASE + "/playlists/" + playlistId, accessToken, Map.class);
         List<TargetMusicDto> tracks = new ArrayList<>();
@@ -120,11 +131,12 @@ public class SoundCloudService extends MusicService {
         return tracks;
     }
 
+
     @Override
-    public String findTrackId(String accessToken, TargetMusicDto target) {
+    public String findTrackId(String accessToken, TargetMusicDto target, StreamingPlatform fromPlatform) {
         if (target == null || target.name() == null) return null;
 
-        String query = queryBuilder.buildQuery(target, StreamingPlatform.SOUNDCLOUD);
+        String query = queryBuilder.buildQuery(target, fromPlatform, StreamingPlatform.SOUNDCLOUD);
 
         String searchUrl = UriComponentsBuilder
                 .fromHttpUrl(API_BASE + "/tracks")
