@@ -35,9 +35,6 @@ export default function Navbar()
                     <NavLink to="/dashboard" className={({ isActive }) => (isActive ? styles.active : styles.link)}>
                         Dashboard
                     </NavLink>
-                    <NavLink to="/settings" className={({ isActive }) => (isActive ? styles.active : styles.link)}>
-                        Settings
-                    </NavLink>
                     <NavLink to="/profile" className={({ isActive }) => (isActive ? styles.active : styles.link)}>
                         Profile
                     </NavLink>

@@ -9,7 +9,7 @@ export default function AboutPage()
                     <h2 className="about-subtitle">What We Do</h2>
                     <p className="about-text">
                         Playlist Converter lets you transfer your playlists seamlessly across
-                        Spotify, YouTube, SoundCloud, Apple Music, and Deezer. Fast, simple, and secure.
+                        Spotify, YouTube, SoundCloud (deezer currently unavilable). Fast, simple, and secure.
                     </p>
                 </div>
 
