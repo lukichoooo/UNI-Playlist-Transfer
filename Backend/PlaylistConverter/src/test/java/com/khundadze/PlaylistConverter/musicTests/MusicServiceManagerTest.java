@@ -56,8 +56,6 @@ class MusicServiceManagerTest {
         when(registry.getService(any(StreamingPlatform.class))).thenReturn(musicService);
     }
 
-    // --- No changes in this section ---
-
     @Test
     @DisplayName("getUsersPlaylists should return sorted playlists when token is valid")
     void getUsersPlaylists_Success() {
@@ -112,43 +110,61 @@ class MusicServiceManagerTest {
         verify(musicService, never()).createPlaylist(any(), any(), any());
     }
 
-    // --- transferPlaylist Tests ---
-
     @Test
     @DisplayName("transferPlaylist should successfully transfer all tracks with a given name")
     void transferPlaylist_Success() {
+        // Arrange
         StreamingPlatform fromPlatform = StreamingPlatform.SPOTIFY;
         StreamingPlatform toPlatform = StreamingPlatform.YOUTUBEMUSIC;
         String newPlaylistName = "Transferred Playlist";
         String transferState = "transfer-123";
+
         MusicService fromService = mock(MusicService.class);
         MusicService toService = mock(MusicService.class);
+
         when(registry.getService(fromPlatform)).thenReturn(fromService);
         when(registry.getService(toPlatform)).thenReturn(toService);
+
         OAuthTokenResponseDto fromToken = new OAuthTokenResponseDto("from-token", fromPlatform);
         OAuthTokenResponseDto toToken = new OAuthTokenResponseDto("to-token", toPlatform);
         when(tokenService.getValidAccessTokenDto(fromPlatform)).thenReturn(fromToken);
         when(tokenService.getValidAccessTokenDto(toPlatform)).thenReturn(toToken);
+
         List<TargetMusicDto> sourceTracks = List.of(
                 new TargetMusicDto("s_id1", "Track A", "Artist X", "Album A", "ISRC1", "180", List.of("pop")),
                 new TargetMusicDto("s_id2", "Track B", "Artist Y", "Album B", "ISRC2", "240", List.of("rock"))
         );
-        when(fromService.getPlaylistsTracks(anyString(), anyString())).thenReturn(sourceTracks);
-        when(toService.findTrackId(eq("to-token"), any(TargetMusicDto.class))).thenReturn("target-id-A").thenReturn("target-id-B");
-        List<String> targetIds = List.of("target-id-A", "target-id-B");
-        List<Music> createdMusics = Stream.generate(() -> mock(Music.class)).limit(targetIds.size()).toList();
-        Playlist createdPlaylist = Playlist.builder().id("new-id").name(newPlaylistName).musics(createdMusics).build();
-        when(toService.createPlaylist("to-token", newPlaylistName, targetIds)).thenReturn(createdPlaylist);
+        when(fromService.getPlaylistsTracks(eq(fromToken.accessToken()), eq("fromId"))).thenReturn(sourceTracks);
 
+        when(toService.findTrackId(eq(toToken.accessToken()), any(TargetMusicDto.class), eq(fromPlatform)))
+                .thenReturn("target-id-A")
+                .thenReturn("target-id-B");
+
+        List<String> expectedTargetIds = List.of("target-id-A", "target-id-B");
+        Playlist expectedCreatedPlaylist = Playlist.builder()
+                .id("new-id")
+                .name(newPlaylistName)
+                .musics(Stream.generate(() -> mock(Music.class)).limit(expectedTargetIds.size()).toList())
+                .build();
+        when(toService.createPlaylist(eq(toToken.accessToken()), eq(newPlaylistName), eq(expectedTargetIds))).thenReturn(expectedCreatedPlaylist);
+
+        // Act
         Playlist result = musicServiceManager.transferPlaylist(transferState, fromPlatform, toPlatform, "fromId", newPlaylistName);
 
-        assertEquals(createdPlaylist, result);
-        verify(toService).createPlaylist("to-token", newPlaylistName, targetIds);
+        // Assert
+        assertEquals(expectedCreatedPlaylist, result);
+
+        ArgumentCaptor<List<String>> trackIdsCaptor = ArgumentCaptor.forClass(List.class);
+        verify(toService).createPlaylist(eq(toToken.accessToken()), eq(newPlaylistName), trackIdsCaptor.capture());
+        assertEquals(expectedTargetIds, trackIdsCaptor.getValue());
+
         ArgumentCaptor<TransferProgress> progressCaptor = ArgumentCaptor.forClass(TransferProgress.class);
         verify(progressService, times(3)).sendProgress(eq(transferState), progressCaptor.capture());
         List<TransferProgress> progresses = progressCaptor.getAllValues();
-        assertEquals(2, progresses.get(2).getCurrent());
-        assertEquals(2, progresses.get(2).getTotal());
+        assertEquals(2, progresses.get(1).getCurrent());
+        assertEquals(2, progresses.get(1).getTotal());
+        assertEquals(expectedCreatedPlaylist.getMusicCount(), progresses.get(2).getCurrent());
+        assertEquals(expectedCreatedPlaylist.getMusicCount(), progresses.get(2).getTotal());
     }
 
     @Test
@@ -159,8 +175,6 @@ class MusicServiceManagerTest {
         String expectedDefaultName = "Playlist From " + fromPlatform.name();
         when(tokenService.getValidAccessTokenDto(any())).thenReturn(tokenDto);
         when(musicService.getPlaylistsTracks(any(), any())).thenReturn(Collections.emptyList());
-
-        // **FIX:** Mock the createPlaylist call to prevent NullPointerException
         Playlist dummyPlaylist = Playlist.builder().id("dummy-id").name(expectedDefaultName).build();
         when(musicService.createPlaylist(anyString(), anyString(), anyList())).thenReturn(dummyPlaylist);
 
@@ -174,35 +188,50 @@ class MusicServiceManagerTest {
     @Test
     @DisplayName("transferPlaylist should filter out tracks that are not found")
     void transferPlaylist_FiltersNotFoundTracks() {
-        // Given
+        // Arrange
+        StreamingPlatform fromPlatform = StreamingPlatform.SPOTIFY;
+        StreamingPlatform toPlatform = StreamingPlatform.YOUTUBEMUSIC;
+        String transferState = "state";
+        String newPlaylistName = "name";
+
+        MusicService fromService = mock(MusicService.class);
+        MusicService toService = mock(MusicService.class);
+        when(registry.getService(fromPlatform)).thenReturn(fromService);
+        when(registry.getService(toPlatform)).thenReturn(toService);
+
+        OAuthTokenResponseDto fromToken = new OAuthTokenResponseDto("from-token", fromPlatform);
+        OAuthTokenResponseDto toToken = new OAuthTokenResponseDto("to-token", toPlatform);
+        when(tokenService.getValidAccessTokenDto(fromPlatform)).thenReturn(fromToken);
+        when(tokenService.getValidAccessTokenDto(toPlatform)).thenReturn(toToken);
+
         List<TargetMusicDto> sourceTracks = List.of(
                 new TargetMusicDto("s_id1", "Track A", "X", "A", "I1", "180", List.of()),
                 new TargetMusicDto("s_id2", "Track B", "Y", "B", "I2", "240", List.of()),
                 new TargetMusicDto("s_id3", "Track C", "Z", "C", "I3", "200", List.of())
         );
-        when(musicService.getPlaylistsTracks(any(), any())).thenReturn(sourceTracks);
-        when(tokenService.getValidAccessTokenDto(any())).thenReturn(tokenDto);
-        when(musicService.findTrackId(eq(FAKE_TOKEN), any(TargetMusicDto.class)))
+        when(fromService.getPlaylistsTracks(eq(fromToken.accessToken()), anyString())).thenReturn(sourceTracks);
+
+        when(toService.findTrackId(eq(toToken.accessToken()), any(TargetMusicDto.class), eq(fromPlatform)))
                 .thenReturn("id-A")
                 .thenReturn(null)
                 .thenReturn("id-C");
 
-        // **FIX:** Mock the createPlaylist call to prevent NullPointerException
-        Playlist dummyPlaylist = Playlist.builder().id("dummy-id").name("name").build();
-        when(musicService.createPlaylist(anyString(), anyString(), anyList())).thenReturn(dummyPlaylist);
+        List<String> expectedTrackIds = List.of("id-A", "id-C");
+        Playlist dummyPlaylist = Playlist.builder().id("dummy-id").name(newPlaylistName).build();
+        when(toService.createPlaylist(eq(toToken.accessToken()), eq(newPlaylistName), eq(expectedTrackIds))).thenReturn(dummyPlaylist);
 
-        // When
-        musicServiceManager.transferPlaylist("state", TEST_PLATFORM, TEST_PLATFORM, "id", "name");
+        // Act
+        musicServiceManager.transferPlaylist(transferState, fromPlatform, toPlatform, "id", newPlaylistName);
 
-        // Then
+        // Assert
         ArgumentCaptor<List<String>> trackIdsCaptor = ArgumentCaptor.forClass(List.class);
-        verify(musicService).createPlaylist(eq(FAKE_TOKEN), eq("name"), trackIdsCaptor.capture());
+        verify(toService).createPlaylist(eq(toToken.accessToken()), eq(newPlaylistName), trackIdsCaptor.capture());
         List<String> capturedIds = trackIdsCaptor.getValue();
         assertEquals(2, capturedIds.size());
-        assertTrue(capturedIds.containsAll(List.of("id-A", "id-C")));
+        assertTrue(capturedIds.containsAll(expectedTrackIds));
 
         ArgumentCaptor<TransferProgress> progressCaptor = ArgumentCaptor.forClass(TransferProgress.class);
-        verify(progressService, times(4)).sendProgress(eq("state"), progressCaptor.capture());
+        verify(progressService, times(4)).sendProgress(eq(transferState), progressCaptor.capture());
         List<TransferProgress> progresses = progressCaptor.getAllValues();
         assertTrue(progresses.get(0).isFound());
         assertFalse(progresses.get(1).isFound());
@@ -224,5 +253,79 @@ class MusicServiceManagerTest {
                 () -> musicServiceManager.transferPlaylist("s", StreamingPlatform.SPOTIFY, StreamingPlatform.YOUTUBEMUSIC, "id", "n")
         );
         verify(musicService, never()).getPlaylistsTracks(any(), any());
+    }
+
+    @Test
+    @DisplayName("transferPlaylist should successfully transfer tracks when fromPlatform and toPlatform are the same")
+    void transferPlaylist_SamePlatform_Success() {
+        // Given
+        StreamingPlatform platform = StreamingPlatform.SPOTIFY;
+        String transferState = "transfer-456";
+        String newPlaylistName = "Cloned Playlist";
+        String fromPlaylistId = "from-playlist-id";
+
+        MusicService svc = mock(MusicService.class);
+        when(registry.getService(platform)).thenReturn(svc);
+        OAuthTokenResponseDto token = new OAuthTokenResponseDto("same-platform-token", platform);
+        when(tokenService.getValidAccessTokenDto(platform)).thenReturn(token);
+
+        List<TargetMusicDto> sourceTracks = List.of(
+                new TargetMusicDto("track-id1", "Track 1", "Artist 1", "Album 1", null, "200", List.of()),
+                new TargetMusicDto("track-id2", "Track 2", "Artist 2", "Album 2", null, "250", List.of())
+        );
+        when(svc.getPlaylistsTracks(anyString(), eq(fromPlaylistId))).thenReturn(sourceTracks);
+
+        Playlist createdPlaylist = Playlist.builder()
+                .id("new-playlist-id")
+                .name(newPlaylistName)
+                .musics(List.of(Music.builder().id("track-id1").build(), Music.builder().id("track-id2").build()))
+                .build();
+        when(svc.createPlaylist(eq(token.accessToken()), eq(newPlaylistName), anyList())).thenReturn(createdPlaylist);
+
+        // When
+        Playlist result = musicServiceManager.transferPlaylist(transferState, platform, platform, fromPlaylistId, newPlaylistName);
+
+        // Then
+        assertEquals(createdPlaylist, result);
+        ArgumentCaptor<List<String>> trackIdsCaptor = ArgumentCaptor.forClass(List.class);
+        verify(svc).createPlaylist(eq(token.accessToken()), eq(newPlaylistName), trackIdsCaptor.capture());
+        assertEquals(List.of("track-id1", "track-id2"), trackIdsCaptor.getValue());
+        verify(svc, never()).findTrackId(anyString(), any(), any());
+        verify(progressService, times(3)).sendProgress(eq(transferState), any(TransferProgress.class));
+    }
+
+    @Test
+    @DisplayName("getUsersPlaylists should return an empty list when no playlists are found")
+    void getUsersPlaylists_EmptyList() {
+        // Given
+        when(tokenService.getValidAccessTokenDto(TEST_PLATFORM)).thenReturn(tokenDto);
+        when(musicService.getUsersPlaylists(FAKE_TOKEN)).thenReturn(Collections.emptyList());
+
+        // When
+        List<PlaylistSearchDto> result = musicServiceManager.getUsersPlaylists(TEST_PLATFORM);
+
+        // Then
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(musicService).getUsersPlaylists(FAKE_TOKEN);
+    }
+
+    @Test
+    @DisplayName("createPlaylist should successfully create an empty playlist when given an empty track list")
+    void createPlaylist_EmptyTrackList_Success() {
+        // Given
+        String playlistName = "Empty Playlist";
+        List<String> trackIds = Collections.emptyList();
+        Playlist expectedPlaylist = Playlist.builder().id("emptyId").name(playlistName).musics(Collections.emptyList()).build();
+        when(tokenService.getValidAccessTokenDto(TEST_PLATFORM)).thenReturn(tokenDto);
+        when(musicService.createPlaylist(FAKE_TOKEN, playlistName, trackIds)).thenReturn(expectedPlaylist);
+
+        // When
+        Playlist result = musicServiceManager.createPlaylist(TEST_PLATFORM, playlistName, trackIds);
+
+        // Then
+        assertEquals(expectedPlaylist, result);
+        assertEquals(0, result.getMusicCount());
+        verify(musicService).createPlaylist(FAKE_TOKEN, playlistName, trackIds);
     }
 }
