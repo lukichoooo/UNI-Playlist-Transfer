@@ -27,7 +27,6 @@ export default function PlaylistDetailsStep({
     const [selectedPlaylist, setSelectedPlaylist] = useState<PlaylistSearchDto | null>(null as any);
     const [playlistModalOpen, setPlaylistModalOpen] = useState(false);
     const [sortedFromPlaylists, setSortedFromPlaylists] = useState<PlaylistSearchDto[]>([]); // Placeholder data
-    // TODO: fetch playlists based on fromService when it changes
 
     const [playlistName, setPlaylistName] = useState("");
 
@@ -101,8 +100,6 @@ export default function PlaylistDetailsStep({
         if (!platform) return;
 
         await converterService.oauthLogin(platform as any);
-
-        // TODO: implement redis and store tokens there
 
         // After successful authentication, notify the parent to refresh authenticated services
         onAuthenticationSuccess();

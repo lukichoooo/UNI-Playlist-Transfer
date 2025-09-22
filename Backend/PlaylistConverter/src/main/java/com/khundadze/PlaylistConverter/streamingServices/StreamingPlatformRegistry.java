@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 
 @Component
-public class StreamingPlatformRegistry { // TODO: add all streaming platforms services
+public class StreamingPlatformRegistry {
 
     private final SpotifyService spotifyService;
     private final YouTubeService youTubeService;

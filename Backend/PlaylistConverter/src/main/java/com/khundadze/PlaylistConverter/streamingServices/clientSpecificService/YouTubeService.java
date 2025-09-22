@@ -174,49 +174,44 @@ public class YouTubeService extends MusicService {
 
     @Override
     public String findTrackId(String accessToken, TargetMusicDto target, StreamingPlatform fromPlatform) {
-        if (target == null || target.name() == null || target.name().isBlank()) {
-            return null;
-        }
+        if (target == null || target.name() == null) return null;
 
         String query = queryBuilder.buildQuery(target, fromPlatform, StreamingPlatform.YOUTUBE);
 
-        String searchUrl = UriComponentsBuilder.fromHttpUrl(API_BASE + "/search")
+        String searchUrl = UriComponentsBuilder
+                .fromHttpUrl(API_BASE + "/search")
                 .queryParam("part", "snippet")
-                .queryParam("type", "video")
                 .queryParam("q", query)
-                .queryParam("order", "viewCount")
+                .queryParam("type", "video")
                 .queryParam("maxResults", 50)
-                .toUriString();
+                .build().toUriString();
 
-        Map<String, Object> searchResponse = getRequest(searchUrl, accessToken, Map.class);
-        if (searchResponse == null || searchResponse.get("items") == null || ((List<?>) searchResponse.get("items")).isEmpty()) {
-            return null;
-        }
+        Map<String, Object> response = getRequest(searchUrl, accessToken, Map.class);
+        if (response == null || !response.containsKey("items")) return null;
 
-        // --- STEP 2: Map the search results to DTOs ---
-        List<Map<String, Object>> searchItems = (List<Map<String, Object>>) searchResponse.get("items");
+        List<Map<String, Object>> items = (List<Map<String, Object>>) response.get("items");
+
         List<ResultMusicDto> results = new ArrayList<>();
-        for (Map<String, Object> item : searchItems) {
-            Map<String, Object> snippet = (Map<String, Object>) item.get("snippet");
-            Map<String, Object> idMap = (Map<String, Object>) item.get("id");
+        for (Map<String, Object> item : items) {
+            Map<String, String> idMap = (Map<String, String>) item.get("id");
+            String id = idMap != null ? idMap.get("videoId") : null;
+            if (id == null) continue;
 
-            if (snippet == null || idMap == null || idMap.get("videoId") == null) continue;
+            Map<String, Object> snippet = (Map<String, Object>) item.get("snippet");
+            String title = (String) snippet.get("title");
+            String channelTitle = (String) snippet.get("channelTitle");
+            String description = (String) snippet.get("description");
 
             Music music = Music.builder()
-                    .id(idMap.get("videoId").toString())
-                    .name((String) snippet.get("title"))
-                    .artist((String) snippet.get("channelTitle"))
-                    .description((String) snippet.get("description"))
-                    // Duration, Album, and ISRC are not available from the search endpoint
-                    .duration(null)
+                    .id(id)
+                    .name(title)
+                    .artist(channelTitle)
                     .album(null)
                     .isrc(null)
+                    .duration(null)
+                    .description(description)
                     .build();
             results.add(mapper.toResultMusicDto(music));
-        }
-
-        if (results.isEmpty()) {
-            return null;
         }
 
         Music bestMatch = matcher.bestMatch(target, results);

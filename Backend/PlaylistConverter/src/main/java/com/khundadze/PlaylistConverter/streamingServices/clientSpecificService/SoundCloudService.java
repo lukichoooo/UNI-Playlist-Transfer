@@ -109,9 +109,7 @@ public class SoundCloudService extends MusicService {
 
                     // handle nested "playlist" object
                     Map<String, Object> playlistMap = (Map<String, Object>) track.get("playlist");
-                    String album = playlistMap != null ? (String) playlistMap.get("title") : null;
 
-                    String isrc = (String) track.get("track_code");
                     String duration = track.get("duration") != null ? String.valueOf(track.get("duration")) : null;
                     String description = (String) track.get("description");
 
@@ -119,8 +117,8 @@ public class SoundCloudService extends MusicService {
                             .id(id)
                             .name(title)
                             .artist(artist)
-                            .album(album)
-                            .isrc(isrc)
+                            .album(null)
+                            .isrc(null)
                             .duration(duration)
                             .description(description)
                             .build();
@@ -156,11 +154,6 @@ public class SoundCloudService extends MusicService {
             Map<String, Object> userMap = (Map<String, Object>) track.get("user");
             String artist = userMap != null ? (String) userMap.get("username") : null;
 
-            // handle nested "playlist" object
-            Map<String, Object> playlistMap = (Map<String, Object>) track.get("playlist");
-            String album = playlistMap != null ? (String) playlistMap.get("title") : null;
-
-            String isrc = (String) track.get("track_code");
             String duration = track.get("duration") != null ? String.valueOf(track.get("duration")) : null;
             String description = (String) track.get("description");
 
@@ -168,8 +161,8 @@ public class SoundCloudService extends MusicService {
                     .id(id)
                     .name(title)
                     .artist(artist)
-                    .album(album)
-                    .isrc(isrc)
+                    .album(null)
+                    .isrc(null)
                     .duration(duration)
                     .description(description)
                     .build();

@@ -127,7 +127,7 @@ public class SpotifyService extends MusicService {
     @Override
     public List<TargetMusicDto> getPlaylistsTracks(String accessToken, String playlistId) {
         String uri = API_BASE + "/playlists/" + playlistId + "/tracks";
-        List<TargetMusicDto> musics = new ArrayList<>();
+        List<TargetMusicDto> tracks = new ArrayList<>();
 
         while (uri != null) {
             Map<String, Object> page = getRequest(uri, accessToken, Map.class);
@@ -137,48 +137,53 @@ public class SpotifyService extends MusicService {
                 for (Map<String, Object> item : items) {
                     Map<String, Object> track = (Map<String, Object>) item.get("track");
 
-                    if (track == null) {
-                        continue;
+                    if (track != null) {
+                        String id = (String) track.get("id");
+                        String name = (String) track.get("name");
+
+                        String artist = null;
+                        List<Map<String, Object>> artistsList = (List<Map<String, Object>>) track.get("artists");
+                        if (artistsList != null && !artistsList.isEmpty()) {
+                            artist = (String) artistsList.get(0).get("name");
+                        }
+
+                        String album = null;
+                        Map<String, Object> albumMap = (Map<String, Object>) track.get("album");
+                        if (albumMap != null) {
+                            album = (String) albumMap.get("name");
+                        }
+
+                        String isrc = null;
+                        Map<String, Object> externalIds = (Map<String, Object>) track.get("external_ids");
+                        if (externalIds != null) {
+                            isrc = (String) externalIds.get("isrc");
+                        }
+
+                        String duration = null;
+                        Integer durationMs = (Integer) track.get("duration_ms");
+                        if (durationMs != null) {
+                            duration = String.valueOf(durationMs);
+                        }
+
+                        String description = name + " " + artist + " " + album + " " + isrc;
+
+                        Music music = Music.builder()
+                                .id(id)
+                                .name(name)
+                                .artist(artist)
+                                .album(album)
+                                .isrc(isrc)
+                                .duration(duration)
+                                .description(null)
+                                .build();
+
+                        tracks.add(mapper.toTargetMusicDto(music));
                     }
-
-                    String id = (String) track.get("id");
-                    String name = (String) track.get("name");
-
-                    String artist = null;
-                    List<Map<String, Object>> artistsList = (List<Map<String, Object>>) track.get("artists");
-                    if (artistsList != null && !artistsList.isEmpty()) {
-                        artist = (String) artistsList.get(0).get("name");
-                    }
-
-                    String album = null;
-                    Map<String, Object> albumMap = (Map<String, Object>) track.get("album");
-                    if (albumMap != null && albumMap.containsKey("name")) {
-                        album = (String) albumMap.get("name");
-                    }
-
-                    String isrc = null;
-                    Map<String, Object> externalIds = (Map<String, Object>) track.get("external_ids");
-                    if (externalIds != null && externalIds.containsKey("isrc")) {
-                        isrc = (String) externalIds.get("isrc");
-                    }
-
-                    String duration = null;
-                    Integer durationMs = (Integer) track.get("duration_ms");
-                    if (durationMs != null) {
-                        duration = String.valueOf(durationMs);
-                    }
-
-                    String description = null;
-                    List<String> keywordsLowList = null;
-
-                    musics.add(new TargetMusicDto(id, name, artist, album, isrc, duration, keywordsLowList));
                 }
             }
-
             uri = (String) page.get("next");
         }
-
-        return musics;
+        return tracks;
     }
 
     @Override

@@ -12,6 +12,21 @@ public class WebClientConfig {
     public WebClient spotifyWebClient(WebClient.Builder builder) {
         return builder
                 .baseUrl("https://api.spotify.com/v1")
+                .exchangeStrategies(ExchangeStrategies.builder()
+                        .codecs(configurer -> configurer.defaultCodecs()
+                                .maxInMemorySize(16 * 1024 * 1024)) // 16 MB
+                        .build())
+                .build();
+    }
+
+    @Bean
+    public WebClient youTubeWebClient(WebClient.Builder builder) {
+        return builder
+                .baseUrl("https://www.googleapis.com/youtube/v3")
+                .exchangeStrategies(ExchangeStrategies.builder()
+                        .codecs(configurer -> configurer.defaultCodecs()
+                                .maxInMemorySize(16 * 1024 * 1024)) // 16 MB
+                        .build())
                 .build();
     }
 
@@ -25,14 +40,7 @@ public class WebClientConfig {
                         .build())
                 .build();
     }
-
-    @Bean
-    public WebClient youTubeWebClient(WebClient.Builder builder) {
-        return builder
-                .baseUrl("https://www.googleapis.com/youtube/v3")
-                .build();
-    }
-
+    
     @Bean
     public WebClient deezerWebClient(WebClient.Builder builder) {
         return builder
