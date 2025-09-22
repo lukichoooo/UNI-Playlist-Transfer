@@ -1,34 +1,51 @@
-# UNI Playlist Transfer 🚀
+UNI Playlist Transfer 🚀
+A full-stack web and mobile application designed for seamless playlist migration between multiple streaming platforms.
 
-![Build Status](https://img.shields.io/badge/build-in_progress-yellow)
-![Version](https://img.shields.io/badge/version-0.7-blue)
-![License](https://img.shields.io/badge/license-SpringBoot_3.5.4-orange)
+Our platform provides a fast, secure, and reliable way to transfer your music playlists between different streaming services, ensuring your favorite tunes follow you wherever you go.
 
-A web and mobile application that transfers music playlists from one streaming platform to another.
+✨ Key Features
+Optimized Music-Matching Algorithm: Our custom-built algorithm significantly improves playlist transfer success rates while reducing processing time, ensuring your playlists are moved accurately and quickly.
 
----
+Scalable Backend Architecture: The backend, built with Spring Boot, PostgreSQL, and Redis caching, is engineered to handle large-scale playlist transfers efficiently and reliably.
 
-✨ **Key Features**
-- Supports multiple streaming platforms
-- Secure authentication using OAuth2
-- Fast and responsive web & mobile interface
-- Built with React (TypeScript) frontend and Spring Boot backend
-- Handles large playlists efficiently
+Secure Authentication: We utilize OAuth2 for secure, token-based authentication. Comprehensive JUnit and Mockito tests were developed to ensure the reliability and security of our system.
 
----
+Containerized Development: Docker is used to containerize core services like Redis, streamlining the development environment setup and deployment process for a consistent experience.
 
-🛠️ **Built With**
-- **Frontend:** React, TypeScript  
-- **Backend:** Java, Spring Boot 3.5.4  
-- **Database:** PostgreSQL, Redis  
-- **Authentication:** OAuth2  
+Cross-Platform UI: The frontend, developed with React and TypeScript, provides a consistent and responsive user experience on both web and mobile devices.
 
----
+🛠️ Built With
+Frontend: React, TypeScript
 
-📦 **Prerequisites**
-- Java 21 (JVM)  
-- Node.js & npm  
-- PostgreSQL & Redis  
-- `application-properties` configured for backend  
+Backend: Java, Spring Boot 3.5.4
 
----
+Database: PostgreSQL, Redis
+
+Authentication: OAuth2
+
+🚀 Getting Started
+To get a copy of the project up and running on your local machine for development and testing purposes, follow these steps.
+
+Prerequisites
+You'll need the following installed:
+
+Java 21 (JVM)
+
+Node.js & npm
+
+PostgreSQL
+
+Redis
+
+Installation
+Clone the repository:
+git clone https://github.com/your-username/your-repository-name.git
+
+Navigate to the backend directory and configure your application.properties file.
+
+Build and run the backend.
+
+Navigate to the frontend directory and install dependencies:
+npm install
+
+Start the frontend application.
