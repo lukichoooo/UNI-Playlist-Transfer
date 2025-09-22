@@ -89,9 +89,5 @@ class MusicServiceManagerTest {
         verify(tokenService).getValidAccessTokenDto(platform);
         verify(spotifyService).createPlaylist("token123", "New Playlist", List.of("track1", "track2"));
     }
-
-    @Test
-    void transferPlaylist_shouldTransferTracks() {
-        // TODO: unimplemented method
-    }
+    
 }

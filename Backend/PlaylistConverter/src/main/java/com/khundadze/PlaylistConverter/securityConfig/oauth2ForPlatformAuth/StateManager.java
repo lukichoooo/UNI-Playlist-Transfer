@@ -1,18 +1,20 @@
 package com.khundadze.PlaylistConverter.securityConfig.oauth2ForPlatformAuth;
 
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 @Component
-public class StateManager { // TODO: replace with Redis
+public class StateManager {
 
-    private final Map<String, Object> stateToPrincipalId = new ConcurrentHashMap<>();
+    private final StringRedisTemplate redisTemplate;
+    private final long EXPIRATION_TIME_MINUTES = 5;
 
-    private final Map<String, String> stateToCodeVerifier = new ConcurrentHashMap<>();
-
+    public StateManager(StringRedisTemplate redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     public String generateState() {
         return UUID.randomUUID().toString();
@@ -21,20 +23,32 @@ public class StateManager { // TODO: replace with Redis
     // --- Principal mapping ---
 
     public void putPrincipal(String state, Object principalId) {
-        stateToPrincipalId.put(state, principalId);
+        String key = "principal:" + state;
+        redisTemplate.opsForValue().set(key, principalId.toString(), EXPIRATION_TIME_MINUTES, TimeUnit.MINUTES);
     }
 
     public Object removePrincipal(String state) {
-        return stateToPrincipalId.remove(state);
+        String key = "principal:" + state;
+        String principalId = redisTemplate.opsForValue().get(key);
+        if (principalId != null) {
+            redisTemplate.delete(key);
+        }
+        return principalId;
     }
 
-    // --- PKCE code verifier mapping (no changes needed) ---
+    // --- PKCE code verifier mapping ---
 
     public void putCodeVerifier(String state, String codeVerifier) {
-        stateToCodeVerifier.put(state, codeVerifier);
+        String key = "codeVerifier:" + state;
+        redisTemplate.opsForValue().set(key, codeVerifier, EXPIRATION_TIME_MINUTES, TimeUnit.MINUTES);
     }
 
     public String removeCodeVerifier(String state) {
-        return stateToCodeVerifier.remove(state);
+        String key = "codeVerifier:" + state;
+        String codeVerifier = redisTemplate.opsForValue().get(key);
+        if (codeVerifier != null) {
+            redisTemplate.delete(key);
+        }
+        return codeVerifier;
     }
 }
