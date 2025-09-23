@@ -21,8 +21,9 @@ public class PlatformQueryRegistry {
     }
 
     private String generateYoutubeQuery(TargetMusicDto target) {
+        String artistName = normalizer.normalizeForQuery(target.artist());
         String trackName = normalizer.normalizeForQuery(target.name());
-        return trackName.trim() + " music";
+        return (trackName + " " + artistName).trim() + " music";
     }
 
     private String generateSoundcloudQuery(TargetMusicDto target) {
