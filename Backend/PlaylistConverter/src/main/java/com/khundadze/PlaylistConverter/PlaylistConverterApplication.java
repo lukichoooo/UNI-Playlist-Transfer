@@ -8,8 +8,8 @@ import org.springframework.cache.annotation.EnableCaching;
 @EnableCaching
 public class PlaylistConverterApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(PlaylistConverterApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(PlaylistConverterApplication.class, args);
+    }
 
 }

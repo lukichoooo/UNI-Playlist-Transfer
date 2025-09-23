@@ -13,6 +13,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -57,7 +59,9 @@ public class AuthService {
         if (!userRepository.existsByUsername(username)) {
             User user = new User();
             user.setUsername(username);
-            user.setPassword(""); // OAuth user has no password
+            String randomPassword = UUID.randomUUID().toString();
+            user.setPassword(passwordEncoder.encode(randomPassword));
+            userRepository.save(user);
             userRepository.save(user);
         }
 
