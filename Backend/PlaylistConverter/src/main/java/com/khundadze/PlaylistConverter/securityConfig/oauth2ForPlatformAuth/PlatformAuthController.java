@@ -127,17 +127,19 @@ public class PlatformAuthController {
         if (token != null && !token.isBlank()) {
             try {
                 Claims claims = jwtService.extractAllClaims(token);
-
                 String principalId = claims.getSubject();
                 List<String> authorities = claims.get("auth", List.class);
 
                 if (authorities != null && !authorities.contains("ROLE_ANONYMOUS")) {
+                    // It's a registered user
                     User user = (User) userDetailsService.loadUserByUsername(principalId);
-                    stateManager.putPrincipal(state, user.getId()); // Store the Long ID
+                    stateManager.putPrincipal(state, user.getId(), true);
                 } else {
-                    stateManager.putPrincipal(state, principalId); // Store the String ID
+                    // It's a guest
+                    stateManager.putPrincipal(state, principalId, false);
                 }
             } catch (Exception ignored) {
+                // Token is invalid or expired, ignore and proceed as if no token was provided
             }
         }
     }
@@ -192,20 +194,19 @@ public class PlatformAuthController {
     }
 
     private void processTokenResponse(String state, OAuth2AccessTokenResponse tokenResponse, StreamingPlatform platform) {
-        // 1. Get the principal ID, which can be a Long (user) or a String (guest).
-        Object principalId = stateManager.removePrincipal(state); // Assumes you have a method like this
+        String principalValue = (String) stateManager.removePrincipal(state);
 
         String accessToken = tokenResponse.getAccessToken().getTokenValue();
         String refreshToken = tokenResponse.getRefreshToken() != null ? tokenResponse.getRefreshToken().getTokenValue() : null;
         Instant expiry = tokenResponse.getAccessToken().getExpiresAt();
 
-        // 2. Check the type of the ID and call the correct overloaded save method.
-        if (principalId instanceof Long userId) {
+        if (stateManager.isRegisteredUser(principalValue)) {
+            String id = principalValue.substring("user:".length());
+            Long userId = Long.parseLong(id);
             oauthTokenService.saveForRegisteredUser(userId, platform, accessToken, refreshToken, expiry);
-        } else if (principalId instanceof String guestId) {
+        } else { // It must be a guest, due to the check above
+            String guestId = principalValue.substring("guest:".length());
             oauthTokenService.saveForGuest(guestId, platform, accessToken, refreshToken, expiry);
-        } else {
-            throw new IllegalStateException("Unknown principal ID type: " + principalId.getClass().getName());
         }
     }
 }

@@ -32,22 +32,25 @@ public class OAuthTokenService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
 
-        OAuthToken token = tokenRepository.findByIdUserIdAndIdPlatform(userId, service)
-                .orElseGet(() -> {
-                    OAuthToken newToken = new OAuthToken();
-                    newToken.setId(new OAuthTokenId(userId, service));
-                    newToken.setUser(user);
-                    return newToken;
-                });
-
-        token.setAccessToken(accessToken);
-        if (refreshToken != null) {
+        Optional<OAuthToken> existing = tokenRepository.findByIdUserIdAndIdPlatform(userId, service);
+        OAuthToken token;
+        
+        if (existing.isPresent()) {
+            token = existing.get();
+            token.setAccessToken(accessToken);
+            if (refreshToken != null) {
+                token.setRefreshToken(refreshToken);
+            }
+            token.setExpiresAt(expiry);
+        } else {
+            token = new OAuthToken();
+            token.setId(new OAuthTokenId(userId, service));
+            token.setUser(user);
+            token.setAccessToken(accessToken);
             token.setRefreshToken(refreshToken);
+            token.setExpiresAt(expiry);
         }
-        token.setExpiresAt(expiry);
-
-        OAuthToken savedToken = tokenRepository.save(mapper.encryptToken(token));
-        return mapper.decryptTokenDto(mapper.toOAuthTokenResponseDto(savedToken));
+        return mapper.decryptTokenDto(mapper.toOAuthTokenResponseDto(tokenRepository.save(mapper.encryptToken(token))));
     }
 
     public OAuthTokenResponseDto saveForGuest(String guestId, StreamingPlatform service, String accessToken, String refreshToken, Instant expiry) {

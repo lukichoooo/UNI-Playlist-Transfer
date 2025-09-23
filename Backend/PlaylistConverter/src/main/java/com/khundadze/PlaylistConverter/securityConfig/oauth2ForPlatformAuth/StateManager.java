@@ -22,9 +22,10 @@ public class StateManager {
 
     // --- Principal mapping ---
 
-    public void putPrincipal(String state, Object principalId) {
+    public void putPrincipal(String state, Object principalId, boolean isRegisteredUser) {
         String key = "principal:" + state;
-        redisTemplate.opsForValue().set(key, principalId.toString(), EXPIRATION_TIME_MINUTES, TimeUnit.MINUTES);
+        String value = (isRegisteredUser ? "user:" : "guest:") + principalId.toString();
+        redisTemplate.opsForValue().set(key, value, EXPIRATION_TIME_MINUTES, TimeUnit.MINUTES);
     }
 
     public Object removePrincipal(String state) {
@@ -50,5 +51,16 @@ public class StateManager {
             redisTemplate.delete(key);
         }
         return codeVerifier;
+    }
+
+    // --- OrincipalValue checks ---
+    public boolean isRegisteredUser(String principalValue) {
+        if (principalValue == null) {
+            return false;
+        }
+        if (principalValue == null || (!principalValue.startsWith("user:") && !principalValue.startsWith("guest:"))) {
+            throw new IllegalStateException("Unknown principal type stored in state manager: " + principalValue);
+        }
+        return principalValue.startsWith("user:");
     }
 }
