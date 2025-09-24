@@ -1,77 +1,107 @@
 # UNI Playlist Transfer
 
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-![Version](https://img.shields.io/badge/version-1.1.0-blue)
+![Version](https://img.shields.io/badge/version-1.2.1-blue)
 ![License](https://img.shields.io/badge/license-SpringBoot_3.5.4-orange)
 
-A full-stack web application designed for seamless playlist migration between multiple streaming platforms. This project provides a fast, secure, and reliable way to transfer your music playlists between different streaming services, ensuring your favorite tunes follow you wherever you go.
+A full-stack web application for seamless playlist migration between multiple streaming platforms.  
+This project provides a fast, secure, and reliable way to transfer your music playlists, ensuring your favorite tunes follow you wherever you go.
 
 ---
 
-## **Key Features**
-
-- **Optimized Music-Matching Algorithm:** The backend features a custom algorithm designed to improve playlist transfer success rates while reducing processing time. It uses fuzzy matching, ISRC codes, and duration comparisons to find the best match for each track.
-
-- **Secure Authentication:** The system uses OAuth2 for secure, token-based authentication with streaming platforms. All sensitive tokens are encrypted before being stored, enhancing user privacy.
-
-- **Scalable Backend Architecture:** The backend is built with Spring Boot, PostgreSQL, and Redis caching, engineered to handle large-scale playlist transfers efficiently and reliably.
-
-- **Containerized Development:** Docker is used to containerize core services like Redis, streamlining the development environment setup and deployment process for a consistent experience.
-
-- **Cross-Platform UI:** The frontend, developed with React and TypeScript, provides a consistent and responsive user experience on both web and mobile devices.
-
-- **Unit Tested:** The backend includes comprehensive JUnit and Mockito tests to ensure the reliability and security of the system.
+## 🚀 Live Demo
+Experience the live application here: [UNI Playlist Transfer on Vercel](https://uni-playlist-transfer.vercel.app/)
 
 ---
 
-## **Supported Streaming Platforms**
-
-The project supports transferring playlists between the following platforms:
-
-- Spotify
-- YouTube
-- YouTube Music
-- SoundCloud
-- Deezer
-- Apple Music
+## ✨ Key Features
+- **Optimized Music-Matching Algorithm**: Uses fuzzy matching, ISRC codes, and duration comparisons for high transfer accuracy.  
+- **Secure Authentication**: OAuth2 with encrypted token storage for maximum privacy.  
+- **Scalable Backend Architecture**: Spring Boot, PostgreSQL, and Redis caching for efficient large-scale transfers.  
+- **Containerized for Consistency**: Core services packaged with Docker for smooth development and deployment.  
+- **Responsive Cross-Platform UI**: React + TypeScript frontend works seamlessly across devices.  
+- **Thoroughly Tested**: Backend covered with JUnit and Mockito tests for reliability.  
 
 ---
 
-## **Built With**
+## 🎥 App Preview
+Main transfer process demo:  
+![Playlist Transfer Demo 1](./assets/uni-gif-1.gif)
+
+Additional preview (UI/feature demo):  
+![Playlist Transfer Demo 2](./assets/uni-gif-2.gif)
+
+---
+
+## 🎶 Supported Streaming Platforms
+- Spotify  
+- YouTube  
+- YouTube Music  
+- SoundCloud  
+- Deezer  
+- Apple Music  
+
+---
+
+## 🛠️ Technologies Used
 
 ### Frontend
-- **React:** A JavaScript library for building user interfaces.
-- **TypeScript:** A typed superset of JavaScript that compiles to plain JavaScript.
-- **Vite:** A build tool that aims to provide a faster and leaner development experience for modern web projects.
-- **React Router:** For declarative routing in a React application.
-- **Axios:** A promise-based HTTP client for the browser and node.js.
-- **Fuse.js:** A powerful, lightweight fuzzy-search library for JavaScript.
+- **Framework**: React + TypeScript  
+- **Build Tool**: Vite  
+- **Routing**: React Router  
+- **HTTP Client**: Axios  
+- **Fuzzy Search**: Fuse.js  
 
 ### Backend
-- **Java:** The core programming language, version 21.
-- **Spring Boot:** A framework to simplify the bootstrapping and development of new Spring applications.
-- **PostgreSQL:** A powerful, open-source relational database.
-- **Redis:** An in-memory data structure store used for caching and state management.
-- **JWT:** The backend uses jjwt for JSON Web Token creation and validation.
-- **Docker:** For containerization of the application and its dependencies.
+- **Framework**: Spring Boot  
+- **Language**: Java 21  
+- **Database**: PostgreSQL  
+- **Caching**: Redis  
+- **Authentication**: JWT (jjwt)  
+- **Containerization**: Docker  
 
 ---
 
-## **Getting Started**
+## 📦 Getting Started
 
-To get a copy of the project up and running on your local machine for development and testing purposes, follow these steps.
-
-### **Prerequisites**
-- Java 21 (JVM)
-- Node.js & npm
-- PostgreSQL & Redis
-- Backend `application-properties` file configured
-- Frontend `.env` file configured
+### Prerequisites
+- Java 21 (JVM)  
+- Node.js & npm  
+- PostgreSQL & Redis instances running  
+- Configured `application.properties` file for backend  
+- Configured `.env` file for frontend  
 
 ---
 
-## **Contact**
+### Installation & Setup
 
-- **Email:** khundadzeluka702@gmail.com  
-- **GitHub:** [lukichoooo](https://github.com/lukichoooo)
+#### Clone the repository
+```bash
+git clone https://github.com/lukichoooo/uni-playlist-transfer.git
+```
 
+
+Build and run the backend:
+```bash
+cd Backend/PlaylistConverter
+mvn clean install
+```
+
+Install and run the frontend:
+```bash
+cd ../../Frontend/PlaylistConverter
+npm install
+npm run dev
+```
+
+Start the backend Spring Boot application from your IDE or command line.
+```bash
+cd Backend/PlaylistConverter
+mvn clean install
+```
+
+### Contact
+
+Email: khundadzeluka702@gmail.com
+
+GitHub: lukichoooo
