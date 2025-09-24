@@ -147,3 +147,16 @@
 .transfer-btn.active:hover {
     background: #1976d2;
 }
+
+
+@media (max-width: 600px) {
+    .service-auth-container {
+        flex-direction: column;
+        gap: 1rem;
+        max-width: 100%;
+    }
+
+    .service-box {
+        margin: 0;
+    }
+}
