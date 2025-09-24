@@ -11,7 +11,6 @@ export default function ServiceSelectorMenu()
 {
     const location = useLocation();
     const fromServiceFromState = location.state?.fromService || null;
-    const selectedPlaylistFromState = location.state?.selectedPlaylist || null;
 
     const [fromService, setFromService] = useState<string | null>(fromServiceFromState);
     const [toService, setToService] = useState<string | null>(null);
