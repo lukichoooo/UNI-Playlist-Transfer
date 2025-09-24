@@ -1,24 +1,22 @@
 package com.khundadze.PlaylistConverter.controllers;
 
-import java.util.List;
-
+import com.khundadze.PlaylistConverter.dtos.UserPrivateDto;
+import com.khundadze.PlaylistConverter.dtos.UserPublicDto;
+import com.khundadze.PlaylistConverter.services.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.khundadze.PlaylistConverter.dtos.UserPrivateDto;
-import com.khundadze.PlaylistConverter.dtos.UserPublicDto;
-import com.khundadze.PlaylistConverter.services.UserService;
-
-import lombok.RequiredArgsConstructor;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/users")
 public class UserController {
 
-    private UserService service;
+    private final UserService service;
 
     @GetMapping("getUserById/{id}")
     public UserPrivateDto getUserById(@PathVariable Long id) {
