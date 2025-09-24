@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -29,17 +31,17 @@ public class SecurityConfig {
                                                    OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler)
             throws Exception {
         http
-                .cors().and()
                 // Add JWT filter
                 .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                // Disable CSRF for APIs
-                .csrf().disable()
+                // Disable CSRF for APIs using the new Lambda DSL
+                .csrf(AbstractHttpConfigurer::disable)
                 // Stateless sessions
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // Authorization rules
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                HttpMethod.OPTIONS, "/**", // Allow CORS preflight requests
                                 "/",          // Allow access to the root for health checks
                                 "/api/home",  // Allow access to the home API endpoint
                                 "/home",
@@ -52,10 +54,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 // OAuth2 login (used for Google/GitHub) AND streaming OAuth
                 .oauth2Login(oauth2 -> oauth2
-                        .successHandler(oAuth2LoginSuccessHandler)) // let another class
-                // handle different
-                // auth methods
-
+                        .successHandler(oAuth2LoginSuccessHandler))
                 // Logout
                 .logout(logout -> logout
                         .logoutUrl("/logout")
