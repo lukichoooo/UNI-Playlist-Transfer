@@ -62,7 +62,6 @@ public class AuthService {
             String randomPassword = UUID.randomUUID().toString();
             user.setPassword(passwordEncoder.encode(randomPassword));
             userRepository.save(user);
-            userRepository.save(user);
         }
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
