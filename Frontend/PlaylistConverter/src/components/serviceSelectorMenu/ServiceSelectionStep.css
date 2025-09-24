@@ -146,3 +146,18 @@
     background: #46093b !important;
     color: #fff;
 }
+
+@media (max-width: 720px) {
+    .dual-menus {
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .divider {
+        display: none;
+    }
+
+    .transfer-btn {
+        margin-top: 2rem;
+    }
+}
