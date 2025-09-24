@@ -43,16 +43,17 @@ public class SecurityConfig {
                         .requestMatchers(
                                 HttpMethod.OPTIONS, "/**", // Allow CORS preflight requests
                                 "/",          // Allow access to the root for health checks
-                                "/api/home",  // Allow access to the home API endpoint
+                                "/api/home",
                                 "/home",
                                 "/error",
                                 "/api/auth/**",
                                 "/api/platformAuth/**",
                                 "/api/converter/**",
-                                "/ws/**"
+                                "/ws/**",
+                                "/login/oauth2/**"
                         ).permitAll()
                         .anyRequest().authenticated())
-                // OAuth2 login (used for Google/GitHub) AND streaming OAuth
+                // OAuth2 login (used for Google/GitHub)
                 .oauth2Login(oauth2 -> oauth2
                         .successHandler(oAuth2LoginSuccessHandler))
                 // Logout
