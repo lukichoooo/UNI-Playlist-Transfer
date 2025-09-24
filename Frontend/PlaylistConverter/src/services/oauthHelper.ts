@@ -37,15 +37,5 @@ export function openOAuthPopup(url: string, width = 500, height = 600): Promise<
 
         window.addEventListener("message", listener);
 
-        // Optional: reject if user closes popup without logging in
-        const interval = setInterval(() =>
-        {
-            if (popup.closed)
-            {
-                clearInterval(interval);
-                window.removeEventListener("message", listener);
-                reject(new Error("Popup closed by user"));
-            }
-        }, 500);
     });
 }
