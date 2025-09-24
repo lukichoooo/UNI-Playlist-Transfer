@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -17,6 +16,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @RequiredArgsConstructor
@@ -31,21 +32,23 @@ public class SecurityConfig {
                                                    OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler)
             throws Exception {
         http
-                // Add JWT filter
+                // Apply CORS settings first
+                .cors(withDefaults())
+                // Add JWT filter before the standard authentication filter
                 .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                // Disable CSRF for APIs using the new Lambda DSL
+                // Disable CSRF
                 .csrf(AbstractHttpConfigurer::disable)
-                // Stateless sessions
+                // Use stateless sessions
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // Authorization rules
+                // Define authorization rules
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                HttpMethod.OPTIONS, "/**", // Allow CORS preflight requests
-                                "/",          // Allow access to the root for health checks
+                                "/",
                                 "/api/home",
                                 "/home",
                                 "/error",
+                                "/favicon.ico",
                                 "/api/auth/**",
                                 "/api/platformAuth/**",
                                 "/api/converter/**",
@@ -53,10 +56,10 @@ public class SecurityConfig {
                                 "/login/oauth2/**"
                         ).permitAll()
                         .anyRequest().authenticated())
-                // OAuth2 login (used for Google/GitHub)
+                // Configure OAuth2 login
                 .oauth2Login(oauth2 -> oauth2
                         .successHandler(oAuth2LoginSuccessHandler))
-                // Logout
+                // Configure logout
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/home")
@@ -64,7 +67,6 @@ public class SecurityConfig {
 
         return http.build();
     }
-
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {
