@@ -1,4 +1,12 @@
 import "./ServiceSelectionStep.css";
+import
+{
+    SpotifyIcon,
+    YoutubeIcon,
+    SoundcloudIcon,
+    DeezerIcon,
+    AppleMusicIcon,
+} from "../../../public/Icons"; // icon components
 
 type Props = {
     authenticatedServices: string[];
@@ -6,16 +14,17 @@ type Props = {
     toService: string | null;
     setFromService: (s: string | null) => void;
     setToService: (s: string | null) => void;
-    onTransferClick: () => void; // <-- added prop
+    onTransferClick: () => void;
 };
 
+// Update the array to use the imported icon components
 const ALL_SERVICES = [
-    { id: "SPOTIFY", label: "Spotify", icon: "/icons/spotify.png" },
-    { id: "SOUNDCLOUD", label: "SoundCloud", icon: "/icons/soundcloud.png" },
-    { id: "YOUTUBE", label: "YouTube", icon: "/icons/youtube.png" },
-    { id: "YOUTUBEMUSIC", label: "YT Music", icon: "/icons/youtubemusic.png" },
-    { id: "APPLEMUSIC", label: "Apple Music", icon: "/icons/applemusic.png" },
-    { id: "DEEZER", label: "Deezer", icon: "/icons/deezer.png" },
+    { id: "SPOTIFY", label: "Spotify", icon: SpotifyIcon },
+    { id: "SOUNDCLOUD", label: "SoundCloud", icon: SoundcloudIcon },
+    { id: "YOUTUBE", label: "YouTube", icon: YoutubeIcon },
+    { id: "YOUTUBEMUSIC", label: "YT Music", icon: YoutubeIcon }, // Reusing Youtube icon
+    { id: "APPLEMUSIC", label: "Apple Music", icon: AppleMusicIcon },
+    { id: "DEEZER", label: "Deezer", icon: DeezerIcon },
 ];
 
 const SERVICE_CLASSES: Record<string, string> = {
@@ -33,7 +42,7 @@ export default function ServiceSelectionStep({
     toService,
     setFromService,
     setToService,
-    onTransferClick, // <-- receive prop
+    onTransferClick,
 }: Props)
 {
     const handleFromClick = (serviceId: string) =>
@@ -42,24 +51,26 @@ export default function ServiceSelectionStep({
     const handleToClick = (serviceId: string) =>
         setToService(toService === serviceId ? null : serviceId);
 
-    // Helper function to render a service box (both TO and FROM)
     const renderServiceBox = (
-        service: typeof ALL_SERVICES[0],
+        service: (typeof ALL_SERVICES)[0],
         selectedService: string | null,
         onClick: (id: string) => void
     ) =>
     {
         const isConnected = authenticatedServices.includes(service.id);
         const isSelected = selectedService === service.id;
+        const IconComponent = service.icon; // Get the component from the object
 
         return (
             <div
                 key={service.id}
-                className={`service-box ${isConnected ? "connected" : "not-connected"} ${isSelected ? `selected ${SERVICE_CLASSES[service.id]}` : ""
-                    }`}
+                className={`service-box ${isConnected ? "connected" : "not-connected"
+                    } ${isSelected ? `selected ${SERVICE_CLASSES[service.id]}` : ""}`}
                 onClick={() => onClick(service.id)}
             >
-                <img src={service.icon} alt={service.label} className="service-logo" />
+                <div className="service-logo">
+                    <IconComponent /> {/* Render the icon component */}
+                </div>
                 <span className="service-label">{service.label}</span>
             </div>
         );
@@ -71,7 +82,9 @@ export default function ServiceSelectionStep({
                 <div className="menu-column">
                     <h2 className="menu-subtitle">FROM</h2>
                     <div className="service-grid">
-                        {ALL_SERVICES.map((service) => renderServiceBox(service, fromService, handleFromClick))}
+                        {ALL_SERVICES.map((service) =>
+                            renderServiceBox(service, fromService, handleFromClick)
+                        )}
                     </div>
                 </div>
 
@@ -80,7 +93,9 @@ export default function ServiceSelectionStep({
                 <div className="menu-column">
                     <h2 className="menu-subtitle">TO</h2>
                     <div className="service-grid">
-                        {ALL_SERVICES.map((service) => renderServiceBox(service, toService, handleToClick))}
+                        {ALL_SERVICES.map((service) =>
+                            renderServiceBox(service, toService, handleToClick)
+                        )}
                     </div>
                 </div>
             </div>
@@ -92,7 +107,7 @@ export default function ServiceSelectionStep({
                         ? "partial"
                         : "disabled"
                     }`}
-                onClick={onTransferClick} // <-- use the passed prop
+                onClick={onTransferClick}
                 disabled={!(fromService && toService)}
             >
                 {fromService && toService
