@@ -115,6 +115,7 @@ Build and run the backend:
 ```bash
 cd Backend/PlaylistConverter
 mvn clean install
+mvn spring-boot:run
 ```
 
 Install and run the frontend:
@@ -122,12 +123,6 @@ Install and run the frontend:
 cd ../../Frontend/PlaylistConverter
 npm install
 npm run dev
-```
-
-Start the backend Spring Boot application from your IDE or command line.
-```bash
-cd Backend/PlaylistConverter
-mvn clean install
 ```
 
 ### Contact
