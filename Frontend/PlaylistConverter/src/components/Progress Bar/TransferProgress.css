@@ -1,26 +1,19 @@
 /* --- Overlay & Animation --- */
-
-/* The full-screen background that dims the page */
 .progress-overlay {
     position: fixed;
-    /* Sits on top of the page content */
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    /* Semi-transparent black */
+    background-color: rgba(0, 0, 0, 0.7);
+    /* Made overlay slightly darker */
     display: flex;
-    /* Uses flexbox to center the container */
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    /* Ensures it's on top of other elements */
     animation: fadeIn 0.3s ease-in-out;
-    /* Apply the fade-in animation */
 }
 
-/* The animation for the overlay appearing */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -31,135 +24,105 @@
     }
 }
 
-
 /* --- Main Progress Container --- */
-
-/* The white box holding all the progress elements */
 .progress-container {
-    background-color: #ffffff;
+    background-color: #2c2c2c;
+    /* Changed to dark gray background */
+    color: #f1f1f1;
+    /* Set default text color to light gray */
     padding: 24px;
     border-radius: 8px;
-    /* Softer corners */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    /* Adds depth */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    /* Enhanced shadow for dark theme */
     width: 90%;
     max-width: 550px;
-    /* Slightly wider for better spacing */
     display: flex;
     flex-direction: column;
-    /* Stack children vertically */
     gap: 16px;
-    /* Adds space between all direct children */
 }
-
 
 /* --- Text & Title --- */
-
 .progress-title {
     font-size: 1.5em;
-    /* Larger title */
     font-weight: 600;
-    color: #333;
+    color: #ffffff;
+    /* Brighter text for the title */
     text-align: center;
     margin: 0;
-    /* Removes default margin */
 }
 
-
 /* --- Log Display --- */
-
-/* The scrollable box for log messages */
 .progress-log-container {
-    background-color: #f9f9f9;
-    /* Light grey background to stand out */
-    border: 1px solid #e0e0e0;
+    background-color: #1e1e1e;
+    border: 1px solid #444;
     border-radius: 6px;
     padding: 12px;
     max-height: 200px;
-    /* Limits height and makes it scrollable */
     overflow-y: auto;
-    /* Enables vertical scrolling */
     display: flex;
     flex-direction: column;
     gap: 8px;
-    /* Space between log messages */
 }
 
-/* Base style for any log message */
 .progress-log-message {
     padding: 8px 12px;
     border-radius: 4px;
-    border-left: 5px solid #ccc;
-    /* Default border */
+    border-left: 5px solid #555;
+    /* Darker default border */
     font-size: 0.9em;
     margin: 0;
     word-break: break-word;
-    /* Prevents long messages from overflowing */
+    color: #ccc;
+    background-color: transparent;
 }
 
-/* Style for successful log entries */
+/* Success and Error styles are okay, they provide their own contrast */
 .progress-log-message.success {
-    color: #155724;
-    background-color: #d4edda;
+    color: #c3e6cb;
+    background-color: #2b3a2e;
     border-left-color: #28a745;
-    /* Overrides the default border color */
 }
 
-/* Style for failed or error log entries */
 .progress-log-message.error {
-    color: #721c24;
-    background-color: #f8d7da;
+    color: #f5c6cb;
+    background-color: #492e2e;
     border-left-color: #dc3545;
-    /* Overrides the default border color */
 }
-
 
 /* --- Progress Bar --- */
-
 .progress-bar {
     width: 100%;
     height: 12px;
-    /* A bit thicker */
     border: none;
     border-radius: 6px;
     overflow: hidden;
-    /* Ensures the inner bar respects the border-radius */
     appearance: none;
-    /* Removes default OS styling */
     -webkit-appearance: none;
 }
 
-/* The "track" of the progress bar (the background) */
 .progress-bar::-webkit-progress-bar {
-    background-color: #e9ecef;
+    background-color: #444;
+    /* Darker track for the progress bar */
     border-radius: 6px;
 }
 
-/* The "value" of the progress bar (the moving part) */
 .progress-bar::-webkit-progress-value {
     background-color: #007bff;
-    /* A modern blue */
     border-radius: 6px;
     transition: width 0.2s ease;
-    /* Smooth transition when value changes */
 }
 
-
 /* --- Progress Details (Percentage & Count) --- */
-
 .progress-details {
     display: flex;
     justify-content: space-between;
-    /* Pushes items to the ends */
     font-size: 0.9em;
-    color: #555;
+    color: #aaa;
+    /* Lighter gray for details */
     font-family: monospace;
-    /* Gives a technical feel to the numbers */
 }
 
-
 /* --- Custom Scrollbar --- */
-
 .progress-log-container::-webkit-scrollbar {
     width: 8px;
 }
@@ -169,15 +132,15 @@
 }
 
 .progress-log-container::-webkit-scrollbar-thumb {
-    background-color: #ccc;
+    background-color: #555;
+    /* Darker scrollbar handle */
     border-radius: 4px;
 }
 
 .progress-log-container::-webkit-scrollbar-thumb:hover {
-    background-color: #aaa;
+    background-color: #777;
+    /* Lighter handle on hover */
 }
-
-/* --- Add these new styles to your existing TransferProgress.css file --- */
 
 /* --- Completion Summary View --- */
 .summary-view {
@@ -194,7 +157,6 @@
     font-weight: 700;
     margin: 0;
     color: inherit;
-    /* Inherits color from the parent container */
 }
 
 .summary-stats {
@@ -215,49 +177,48 @@
     display: flex;
     justify-content: space-around;
     width: 100%;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    /* Light border for dark theme */
     padding-top: 16px;
 }
 
 .summary-close-button {
-    background-color: rgba(255, 255, 255, 0.9);
-    color: #333;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    background-color: #444;
+    /* Dark gray button */
+    color: #fff;
+    /* White text */
+    border: 1px solid #666;
+    /* Slightly lighter border */
     padding: 10px 30px;
     font-size: 1em;
     font-weight: 600;
     border-radius: 6px;
     cursor: pointer;
     transition: background-color 0.2s ease, transform 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 .summary-close-button:hover {
-    background-color: #ffffff;
+    background-color: #555;
+    /* Lighter gray on hover */
     transform: translateY(-2px);
 }
 
-
 /* --- Status Color Classes for the Container --- */
-
-/* Base transition for smooth color change */
 .progress-container {
     transition: background-color 0.4s ease-in-out, color 0.4s ease-in-out;
 }
 
-/* Green for >= 85% success */
 .progress-container.status-green {
     background-color: #28a745;
     color: #ffffff;
 }
 
-/* Orange for 60% to 84% success */
 .progress-container.status-orange {
     background-color: #fd7e14;
     color: #ffffff;
 }
 
-/* Red for < 60% success */
 .progress-container.status-red {
     background-color: #dc3545;
     color: #ffffff;
