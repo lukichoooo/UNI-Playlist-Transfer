@@ -47,7 +47,7 @@ export default function Navbar()
                             Login
                         </NavLink>
                     ) : (
-                        <button className={styles.link} onClick={handleLogout}>
+                        <button className={`${styles.link} ${styles.logoutBtn}`} onClick={handleLogout}>
                             Logout
                         </button>
                     )}

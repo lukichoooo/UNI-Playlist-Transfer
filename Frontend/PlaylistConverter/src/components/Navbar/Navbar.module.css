@@ -119,3 +119,14 @@
         padding: 0.45rem 0.6rem;
     }
 }
+
+.logoutBtn {
+    background-color: #d9534f;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+.logoutBtn:hover {
+    background-color: #c9302c;
+}

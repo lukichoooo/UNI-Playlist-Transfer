@@ -118,32 +118,32 @@
 
 /* Service-specific background highlights when selected */
 .spotify-selected {
-    background: #1db954 !important;
+    background: #1e8a44 !important;
     color: #fff;
 }
 
 .soundcloud-selected {
-    background: #ff7700 !important;
+    background: #a34c01 !important;
     color: #fff;
 }
 
 .youtube-selected {
-    background: #ff0000 !important;
+    background: #ba0000 !important;
     color: #fff;
 }
 
 .youtubemusic-selected {
-    background: #e60023 !important;
+    background: #860014ce !important;
     color: #fff;
 }
 
 .applemusic-selected {
-    background: #5c5a5a !important;
+    background: #7d7c7c !important;
     color: #fff;
 }
 
 .deezer-selected {
-    background: #46093b !important;
+    background: #5b164e !important;
     color: #fff;
 }
 
