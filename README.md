@@ -24,6 +24,37 @@ Experience the live application here: [UNI Playlist Transfer on Vercel](https://
 
 ---
 
+## 🧠 Music-Matching Algorithm
+The core of this application is a sophisticated music-matching algorithm designed to achieve the highest possible accuracy when transferring playlists. The process involves two main stages: Query Construction and Scoring & Matching.
+
+**1. Query Construction**
+Instead of using a generic search query for all platforms, the algorithm constructs a unique, optimized query for each target service (e.g., Spotify, YouTube). This is crucial because each platform's search API behaves differently and prioritizes different metadata.
+
+- **Trustworthy Platforms**: For platforms with reliable metadata like **Spotify** and **Deezer**, the query is built using a combination of the song title, artist, and album.
+
+- **Other Platforms**: For platforms where metadata can be less structured, like **YouTube** and **SoundCloud**, the query is a normalized version of the track name.
+
+This platform-specific approach ensures that the initial search results from the target platform's API are as relevant as possible, which is the foundation for accurate matching.
+
+**2. Scoring & Matching**
+Once the search results are retrieved, each potential match is scored against the original song based on a weighted system. This scoring system is designed to mimic human intuition by prioritizing the most reliable identifiers.
+
+The scoring is based on the following factors, with bonuses for strong indicators and penalties for mismatches:
+
+- **ISRC Match**: The highest bonus is awarded for an exact match of the **International Standard Recording Code (ISRC)**, as this is a unique identifier for a specific recording.
+
+- **Title, Artist, and Album**: A combination of **fuzzy matching** and **Jaccard** similarity is used to score the similarity of the song title, artist, and album. Exact matches receive a significant bonus, while mismatches incur a penalty.
+
+- **Duration**: A large bonus is given for an exact duration match, with a smaller bonus for durations within a close tolerance (e.g., +/- 5 seconds). Significant deviations in duration result in a penalty.
+
+- **Keyword Matching**: The algorithm extracts keywords from the song's metadata (like "live", "remix", "acoustic") and awards a bonus for each overlapping keyword between the source and the potential match.
+
+- **Music Indicators**: For platforms like YouTube, a bonus is given if the video description contains keywords like "music" or "song" as these are strong indicators of an official audio track.
+
+The song with the highest cumulative score is selected as the best match, ensuring a highly accurate and reliable playlist transfer.
+
+---
+
 ## 🎥 App Preview
 Main transfer process demo:  
 ![Playlist Transfer Demo 1](./assets/uni-gif-1.gif)
@@ -38,8 +69,7 @@ Additional preview (UI/feature demo):
 - YouTube  
 - YouTube Music  
 - SoundCloud  
-- Deezer  
-- Apple Music  
+- Deezer   (app auth not granted)
 
 ---
 
